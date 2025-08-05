@@ -1,5 +1,5 @@
 export interface TestEntity {
-  type: 'project' | 'buildType' | 'user';
+  type: "project" | "buildType" | "user";
   id: string;
   name?: string;
   username?: string;
@@ -29,7 +29,7 @@ export class TestDataStorage {
   /**
    * Get all entities of a specific type
    */
-  getEntitiesByType(type: TestEntity['type']): TestEntity[] {
+  getEntitiesByType(type: TestEntity["type"]): TestEntity[] {
     return this.entities.filter((entity) => entity.type === type);
   }
 
@@ -59,9 +59,9 @@ export class TestDataStorage {
   /**
    * Clean up entities of a specific type
    */
-  async cleanupByType(type: TestEntity['type']): Promise<void> {
+  async cleanupByType(type: TestEntity["type"]): Promise<void> {
     const entitiesToCleanup = this.entities.filter(
-      (entity) => entity.type === type
+      (entity) => entity.type === type,
     );
     const cleanupPromises = entitiesToCleanup.map(async (entity) => {
       try {

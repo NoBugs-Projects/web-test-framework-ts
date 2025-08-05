@@ -1,4 +1,4 @@
-import { ModelAssertions, ComparisonOptions } from './modelAssertions';
+import { ModelAssertions, ComparisonOptions } from "./modelAssertions";
 
 export interface ModelComparisonBuilder {
   match(options?: ComparisonOptions): void;
@@ -22,8 +22,8 @@ export class ModelComparison {
     ModelAssertions.assertEqual(
       this.requestData,
       this.responseData,
-      'Request and response data do not match',
-      options
+      "Request and response data do not match",
+      options,
     );
   }
 
@@ -34,8 +34,8 @@ export class ModelComparison {
     ModelAssertions.assertContains(
       this.responseData,
       this.requestData,
-      'Response does not contain expected request fields',
-      options
+      "Response does not contain expected request fields",
+      options,
     );
   }
 
@@ -46,8 +46,8 @@ export class ModelComparison {
     ModelAssertions.assertMatches(
       this.responseData,
       this.requestData,
-      'Response does not match expected pattern',
-      options
+      "Response does not match expected pattern",
+      options,
     );
   }
 
@@ -56,7 +56,7 @@ export class ModelComparison {
    */
   static assertThatModels(
     requestData: any,
-    responseData: any
+    responseData: any,
   ): ModelComparisonBuilder {
     return new ModelComparison(requestData, responseData);
   }
@@ -67,7 +67,7 @@ export class ModelComparison {
  */
 export function assertThatModels(
   requestData: any,
-  responseData: any
+  responseData: any,
 ): ModelComparisonBuilder {
   return ModelComparison.assertThatModels(requestData, responseData);
 }

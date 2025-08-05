@@ -1,5 +1,5 @@
-import { Page, Locator } from '@playwright/test';
-import { getIPAddress, getPort } from '../../utils/getLocalIpAddress';
+import { Page, Locator } from "@playwright/test";
+import { getIPAddress, getPort } from "../../utils/getLocalIpAddress";
 
 export class CreateProject {
   readonly page: Page;
@@ -12,26 +12,26 @@ export class CreateProject {
 
   constructor(page: Page) {
     this.page = page;
-    this.repositoryUrlInput = page.locator('#url');
+    this.repositoryUrlInput = page.locator("#url");
     this.proceedButton = page.locator('input[name="createProjectFromUrl"]');
-    this.projectNameInput = page.locator('#projectName');
-    this.buildTypeNameInput = page.locator('#buildTypeName');
+    this.projectNameInput = page.locator("#projectName");
+    this.buildTypeNameInput = page.locator("#buildTypeName");
     this.proceedSecondButton = page.locator('input[value="Proceed"]');
-    this.errorMessage = page.locator('.error-message');
+    this.errorMessage = page.locator(".error-message");
   }
 
   async createProjectModeSelector(projectId: string, mode: string) {
     const ipAddress = await getIPAddress();
     const port = await getPort();
     await this.page.goto(
-      `http://${ipAddress}:${port}/admin/createObjectMenu.html?projectId=${projectId}&showMode=${mode}`
+      `http://${ipAddress}:${port}/admin/createObjectMenu.html?projectId=${projectId}&showMode=${mode}`,
     );
   }
 
   async createProject(
     repositoryUrl: string,
     projectNameInput: string,
-    buildTypeNameInput: string
+    buildTypeNameInput: string,
   ) {
     await this.repositoryUrlInput.fill(repositoryUrl);
     await this.proceedButton.click();
@@ -50,6 +50,6 @@ export class CreateProject {
   }
 
   async getErrorMessageText(): Promise<string> {
-    return (await this.errorMessage.textContent()) || '';
+    return (await this.errorMessage.textContent()) || "";
   }
 }

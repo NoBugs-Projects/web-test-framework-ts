@@ -1,5 +1,5 @@
-import { Page, Locator } from '@playwright/test';
-import { getIPAddress, getPort } from '../../utils/getLocalIpAddress';
+import { Page, Locator } from "@playwright/test";
+import { getIPAddress, getPort } from "../../utils/getLocalIpAddress";
 
 export class CreateBuildType {
   readonly page: Page;
@@ -11,25 +11,25 @@ export class CreateBuildType {
 
   constructor(page: Page) {
     this.page = page;
-    this.projectSelector = page.locator('#projectId');
-    this.buildTypeNameInput = page.locator('#buildTypeName');
-    this.buildTypeIdInput = page.locator('#buildTypeId');
+    this.projectSelector = page.locator("#projectId");
+    this.buildTypeNameInput = page.locator("#buildTypeName");
+    this.buildTypeIdInput = page.locator("#buildTypeId");
     this.createButton = page.locator('input[value="Create"]');
-    this.errorMessage = page.locator('.error-message');
+    this.errorMessage = page.locator(".error-message");
   }
 
   async goToCreateBuildTypePage() {
     const ipAddress = await getIPAddress();
     const port = await getPort();
     await this.page.goto(
-      `http://${ipAddress}:${port}/admin/createObjectMenu.html?showMode=createBuildTypeMenu`
+      `http://${ipAddress}:${port}/admin/createObjectMenu.html?showMode=createBuildTypeMenu`,
     );
   }
 
   async createBuildType(
     projectId: string,
     buildTypeName: string,
-    buildTypeId?: string
+    buildTypeId?: string,
   ) {
     // Select project
     await this.projectSelector.selectOption(projectId);
@@ -56,12 +56,12 @@ export class CreateBuildType {
   }
 
   async getErrorMessageText(): Promise<string> {
-    return (await this.errorMessage.textContent()) || '';
+    return (await this.errorMessage.textContent()) || "";
   }
 
   async isSuccessMessageVisible(): Promise<boolean> {
     try {
-      await this.page.locator('.success-message').waitFor({ timeout: 5000 });
+      await this.page.locator(".success-message").waitFor({ timeout: 5000 });
       return true;
     } catch {
       return false;

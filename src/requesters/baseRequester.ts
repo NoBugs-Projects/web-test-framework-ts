@@ -1,8 +1,8 @@
-import { Page, APIResponse } from '@playwright/test';
-import { Environment } from '../configs/environment';
-import { Logger } from '../utils/logger';
-import { HttpClient, ApiResponse, HttpClientOptions } from './httpClient';
-import { ApiConfig } from '../configs/apiConfig';
+import { Page, APIResponse } from "@playwright/test";
+import { Environment } from "../configs/environment";
+import { Logger } from "../utils/logger";
+import { HttpClient, ApiResponse, HttpClientOptions } from "./httpClient";
+import { ApiConfig } from "../configs/apiConfig";
 
 export interface RequestOptions {
   timeout?: number;
@@ -31,7 +31,7 @@ export class BaseRequester {
   constructor(page: Page, options: HttpClientOptions = {}) {
     this.environment = Environment.getInstance();
     this.logger = new Logger({
-      logLevel: this.environment.getLogLevel() === 'debug' ? 3 : 2,
+      logLevel: this.environment.getLogLevel() === "debug" ? 3 : 2,
       enableConsole: this.environment.isLoggingEnabled(),
       enableFile: this.environment.isFileLoggingEnabled(),
       logFile: this.environment.getLogFilePath(),
@@ -46,13 +46,13 @@ export class BaseRequester {
     };
 
     const apiConfig = new ApiConfig({
-      protocol: 'http',
+      protocol: "http",
       port: 8111,
       timeout: httpClientOptions.timeout || 30000,
       retries: httpClientOptions.retries || 3,
       defaultHeaders: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
     });
 
@@ -63,7 +63,7 @@ export class BaseRequester {
    * Execute a request with comprehensive logging and error handling
    */
   protected async executeRequest<T>(
-    context: RequestContext
+    context: RequestContext,
   ): Promise<ApiResponse<T>> {
     const { method, url, data, headers, options } = context;
     const requestOptions = options || {};
@@ -82,19 +82,19 @@ export class BaseRequester {
       let response: ApiResponse<T>;
 
       switch (method.toUpperCase()) {
-        case 'GET':
+        case "GET":
           response = await this.httpClient.get<T>(url, headers);
           break;
-        case 'POST':
+        case "POST":
           response = await this.httpClient.post<T>(url, data, headers);
           break;
-        case 'PUT':
+        case "PUT":
           response = await this.httpClient.put<T>(url, data, headers);
           break;
-        case 'DELETE':
+        case "DELETE":
           response = await this.httpClient.delete<T>(url, headers);
           break;
-        case 'PATCH':
+        case "PATCH":
           response = await this.httpClient.patch<T>(url, data, headers);
           break;
         default:
@@ -138,7 +138,7 @@ export class BaseRequester {
    */
   protected async executeRequestWithRetry<T>(
     context: RequestContext,
-    maxRetries: number = this.environment.getRetries()
+    maxRetries: number = this.environment.getRetries(),
   ): Promise<ApiResponse<T>> {
     let lastError: Error | null = null;
 
@@ -161,14 +161,14 @@ export class BaseRequester {
       }
     }
 
-    throw lastError || new Error('Request failed after all retries');
+    throw lastError || new Error("Request failed after all retries");
   }
 
   /**
    * Execute a batch of requests
    */
   protected async executeBatchRequests<T>(
-    contexts: RequestContext[]
+    contexts: RequestContext[],
   ): Promise<ApiResponse<T>[]> {
     const results: ApiResponse<T>[] = [];
     const errors: Error[] = [];
@@ -206,26 +206,26 @@ export class BaseRequester {
    */
   protected async executeParallelRequests<T>(
     contexts: RequestContext[],
-    maxConcurrency: number = 5
+    maxConcurrency: number = 5,
   ): Promise<ApiResponse<T>[]> {
     const results: ApiResponse<T>[] = [];
     const chunks = this.chunkArray(contexts, maxConcurrency);
 
     for (const chunk of chunks) {
       const chunkPromises = chunk.map((context) =>
-        this.executeRequest<T>(context)
+        this.executeRequest<T>(context),
       );
       const chunkResults = await Promise.allSettled(chunkPromises);
 
       for (const result of chunkResults) {
-        if (result.status === 'fulfilled') {
+        if (result.status === "fulfilled") {
           results.push(result.value);
         } else {
           results.push({
             status: 0,
             data: null as T,
             headers: {},
-            url: 'unknown',
+            url: "unknown",
             success: false,
             error:
               result.reason instanceof Error
@@ -243,24 +243,24 @@ export class BaseRequester {
    * Sanitize headers for logging (remove sensitive information)
    */
   private sanitizeHeaders(
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
   ): Record<string, string> {
     if (!headers) return {};
 
     const sanitized: Record<string, string> = {};
     const sensitiveKeys = [
-      'authorization',
-      'cookie',
-      'x-csrf-token',
-      'x-tc-csrf-token',
-      'x-api-key',
-      'x-auth-token',
-      'bearer',
+      "authorization",
+      "cookie",
+      "x-csrf-token",
+      "x-tc-csrf-token",
+      "x-api-key",
+      "x-auth-token",
+      "bearer",
     ];
 
     for (const [key, value] of Object.entries(headers)) {
       if (sensitiveKeys.includes(key.toLowerCase())) {
-        sanitized[key] = '[REDACTED]';
+        sanitized[key] = "[REDACTED]";
       } else {
         sanitized[key] = value;
       }

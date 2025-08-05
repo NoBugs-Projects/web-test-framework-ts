@@ -1,4 +1,4 @@
-import { ADMIN_CREDENTIALS } from './constants';
+import { ADMIN_CREDENTIALS } from "./constants";
 
 export const admin = {
   username: ADMIN_CREDENTIALS.USERNAME,

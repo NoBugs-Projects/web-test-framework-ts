@@ -4,8 +4,8 @@ export type CommonAcceptableValues =
   | boolean
   | null
   | object
-  | 'true'
-  | 'false';
+  | "true"
+  | "false";
 
 export type locatorAcceptableValues = CommonAcceptableValues;
 export type nameAcceptableValues = CommonAcceptableValues;
@@ -16,7 +16,7 @@ export const projectData = (
   locator: locatorAcceptableValues,
   name: nameAcceptableValues,
   id: idAcceptableValues,
-  copyAllAssociatedSettings: copyAllAssociatedSettingsAcceptableValues
+  copyAllAssociatedSettings: copyAllAssociatedSettingsAcceptableValues,
 ) => {
   return {
     parentProject: {

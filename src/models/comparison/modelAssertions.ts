@@ -1,4 +1,4 @@
-import { ModelRules } from './modelRules';
+import { ModelRules } from "./modelRules";
 
 export interface ComparisonOptions {
   ignoreFields?: string[];
@@ -29,7 +29,7 @@ export class ModelAssertions {
   static compareObjects(
     expected: any,
     actual: any,
-    options: ComparisonOptions = {}
+    options: ComparisonOptions = {},
   ): ComparisonResult {
     const mergedOptions = { ...this.defaultOptions, ...options };
     const differences: string[] = [];
@@ -40,14 +40,14 @@ export class ModelAssertions {
     this.compareObjectRecursive(
       expected,
       actual,
-      '',
+      "",
       differences,
       missingFields,
-      mergedOptions
+      mergedOptions,
     );
 
     // Check for extra fields in actual
-    this.findExtraFields(expected, actual, '', extraFields, mergedOptions);
+    this.findExtraFields(expected, actual, "", extraFields, mergedOptions);
 
     const success =
       differences.length === 0 &&
@@ -69,7 +69,7 @@ export class ModelAssertions {
     expected: any,
     actual: any,
     message?: string,
-    options: ComparisonOptions = {}
+    options: ComparisonOptions = {},
   ): void {
     const result = this.compareObjects(expected, actual, options);
 
@@ -86,14 +86,14 @@ export class ModelAssertions {
     container: any,
     expectedFields: any,
     message?: string,
-    options: ComparisonOptions = {}
+    options: ComparisonOptions = {},
   ): void {
     const result = this.compareObjects(expectedFields, container, options);
 
     if (result.differences.length > 0 || result.missingFields.length > 0) {
       const errorMessage = this.formatComparisonError(
         result,
-        message || 'Object does not contain expected fields'
+        message || "Object does not contain expected fields",
       );
       throw new Error(errorMessage);
     }
@@ -106,14 +106,14 @@ export class ModelAssertions {
     actual: any,
     pattern: any,
     message?: string,
-    options: ComparisonOptions = {}
+    options: ComparisonOptions = {},
   ): void {
     const result = this.compareObjects(pattern, actual, options);
 
     if (!result.success) {
       const errorMessage = this.formatComparisonError(
         result,
-        message || 'Object does not match pattern'
+        message || "Object does not match pattern",
       );
       throw new Error(errorMessage);
     }
@@ -125,7 +125,7 @@ export class ModelAssertions {
     path: string,
     differences: string[],
     missingFields: string[],
-    options: ComparisonOptions
+    options: ComparisonOptions,
   ): void {
     if (expected === null && actual === null) return;
     if (expected === undefined && actual === undefined) return;
@@ -135,15 +135,15 @@ export class ModelAssertions {
 
     if (typeof expected !== typeof actual) {
       differences.push(
-        `${path}: Expected type ${typeof expected}, got ${typeof actual}`
+        `${path}: Expected type ${typeof expected}, got ${typeof actual}`,
       );
       return;
     }
 
-    if (typeof expected === 'object' && expected !== null) {
+    if (typeof expected === "object" && expected !== null) {
       if (Array.isArray(expected) !== Array.isArray(actual)) {
         differences.push(
-          `${path}: Expected ${Array.isArray(expected) ? 'array' : 'object'}, got ${Array.isArray(actual) ? 'array' : 'object'}`
+          `${path}: Expected ${Array.isArray(expected) ? "array" : "object"}, got ${Array.isArray(actual) ? "array" : "object"}`,
         );
         return;
       }
@@ -155,7 +155,7 @@ export class ModelAssertions {
           path,
           differences,
           missingFields,
-          options
+          options,
         );
       } else {
         this.compareObjectsRecursive(
@@ -164,7 +164,7 @@ export class ModelAssertions {
           path,
           differences,
           missingFields,
-          options
+          options,
         );
       }
     } else {
@@ -187,11 +187,11 @@ export class ModelAssertions {
     path: string,
     differences: string[],
     missingFields: string[],
-    options: ComparisonOptions
+    options: ComparisonOptions,
   ): void {
     if (expected.length !== actual.length) {
       differences.push(
-        `${path}: Expected array length ${expected.length}, got ${actual.length}`
+        `${path}: Expected array length ${expected.length}, got ${actual.length}`,
       );
       return;
     }
@@ -203,7 +203,7 @@ export class ModelAssertions {
         `${path}[${i}]`,
         differences,
         missingFields,
-        options
+        options,
       );
     }
   }
@@ -214,7 +214,7 @@ export class ModelAssertions {
     path: string,
     differences: string[],
     missingFields: string[],
-    options: ComparisonOptions
+    options: ComparisonOptions,
   ): void {
     for (const key in expected) {
       if (options.ignoreFields?.includes(key)) continue;
@@ -232,7 +232,7 @@ export class ModelAssertions {
         fullPath,
         differences,
         missingFields,
-        options
+        options,
       );
     }
   }
@@ -242,9 +242,9 @@ export class ModelAssertions {
     actual: any,
     path: string,
     extraFields: string[],
-    options: ComparisonOptions
+    options: ComparisonOptions,
   ): void {
-    if (typeof actual !== 'object' || actual === null) return;
+    if (typeof actual !== "object" || actual === null) return;
 
     for (const key in actual) {
       if (options.ignoreFields?.includes(key)) continue;
@@ -253,13 +253,13 @@ export class ModelAssertions {
 
       if (!(key in expected)) {
         extraFields.push(fullPath);
-      } else if (typeof actual[key] === 'object' && actual[key] !== null) {
+      } else if (typeof actual[key] === "object" && actual[key] !== null) {
         this.findExtraFields(
           expected[key],
           actual[key],
           fullPath,
           extraFields,
-          options
+          options,
         );
       }
     }
@@ -267,27 +267,27 @@ export class ModelAssertions {
 
   private static formatComparisonError(
     result: ComparisonResult,
-    message?: string
+    message?: string,
   ): string {
     const parts: string[] = [];
 
     if (message) parts.push(message);
 
     if (result.differences.length > 0) {
-      parts.push('Differences found:');
+      parts.push("Differences found:");
       parts.push(...result.differences.map((diff) => `  - ${diff}`));
     }
 
     if (result.missingFields.length > 0) {
-      parts.push('Missing fields:');
+      parts.push("Missing fields:");
       parts.push(...result.missingFields.map((field) => `  - ${field}`));
     }
 
     if (result.extraFields.length > 0) {
-      parts.push('Extra fields:');
+      parts.push("Extra fields:");
       parts.push(...result.extraFields.map((field) => `  - ${field}`));
     }
 
-    return parts.join('\n');
+    return parts.join("\n");
   }
 }

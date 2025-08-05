@@ -1,15 +1,15 @@
-import { faker } from '@faker-js/faker';
+import { faker } from "@faker-js/faker";
 
 export interface ValidationRule {
   type:
-    | 'string'
-    | 'number'
-    | 'boolean'
-    | 'email'
-    | 'url'
-    | 'uuid'
-    | 'date'
-    | 'regex';
+    | "string"
+    | "number"
+    | "boolean"
+    | "email"
+    | "url"
+    | "uuid"
+    | "date"
+    | "regex";
   minLength?: number;
   maxLength?: number;
   pattern?: string;
@@ -33,7 +33,7 @@ export interface EntityDefinition {
 
 export class DataGenerator {
   private static getCurrentDateTime(): string {
-    return faker.date.recent().toISOString().replace(/[-:.]/g, '');
+    return faker.date.recent().toISOString().replace(/[-:.]/g, "");
   }
 
   /**
@@ -41,16 +41,16 @@ export class DataGenerator {
    */
   static generateDataForEntity(
     entityType: string,
-    overrides: Record<string, any> = {}
+    overrides: Record<string, any> = {},
   ): any {
     switch (entityType.toLowerCase()) {
-      case 'project':
+      case "project":
         return this.generateProjectData(overrides);
-      case 'buildtype':
+      case "buildtype":
         return this.generateBuildTypeData(overrides);
-      case 'user':
+      case "user":
         return this.generateUserData(overrides);
-      case 'server':
+      case "server":
         return this.generateServerData(overrides);
       default:
         throw new Error(`Unknown entity type: ${entityType}`);
@@ -62,7 +62,7 @@ export class DataGenerator {
    */
   static generateProjectData(overrides: Record<string, any> = {}): any {
     const baseData = {
-      locator: '_Root',
+      locator: "_Root",
       name: `${this.getCurrentDateTime()}_${faker.word.adjective()}`,
       id: `${faker.word.adjective()}_${this.getCurrentDateTime()}`,
       copyAllAssociatedSettings: true,
@@ -108,14 +108,14 @@ export class DataGenerator {
    */
   static generateServerData(overrides: Record<string, any> = {}): any {
     const baseData = {
-      version: '2023.11.1 (build 147412)',
+      version: "2023.11.1 (build 147412)",
       versionMajor: 2023,
       versionMinor: 11,
-      buildNumber: '147412',
-      buildDate: '20231214T000000+0000',
+      buildNumber: "147412",
+      buildDate: "20231214T000000+0000",
       internalId: faker.string.uuid(),
-      role: 'main_node',
-      webUrl: 'http://localhost:8111',
+      role: "main_node",
+      webUrl: "http://localhost:8111",
     };
 
     return { ...baseData, ...overrides };
@@ -130,22 +130,22 @@ export class DataGenerator {
     }
 
     switch (field.type) {
-      case 'string':
+      case "string":
         return this.generateString(field.validation);
-      case 'number':
+      case "number":
         return this.generateNumber(field.validation);
-      case 'boolean':
+      case "boolean":
         return this.generateBoolean(field.validation);
-      case 'email':
+      case "email":
         return faker.internet.email();
-      case 'url':
+      case "url":
         return faker.internet.url();
-      case 'uuid':
+      case "uuid":
         return faker.string.uuid();
-      case 'date':
+      case "date":
         return faker.date.recent().toISOString();
-      case 'regex':
-        return this.generateByRegex(field.validation?.pattern || '.*');
+      case "regex":
+        return this.generateByRegex(field.validation?.pattern || ".*");
       default:
         return faker.string.alphanumeric();
     }
@@ -187,13 +187,13 @@ export class DataGenerator {
    */
   private static generateByRegex(pattern: string): string {
     // Simple regex pattern generation - in a real implementation, you'd use a proper regex generator
-    if (pattern === '^[a-zA-Z][a-zA-Z0-9_]*$') {
+    if (pattern === "^[a-zA-Z][a-zA-Z0-9_]*$") {
       return `${faker.string.alpha(1)}${faker.string.alphanumeric(5)}`;
     }
-    if (pattern === '^/app/rest/.*$') {
+    if (pattern === "^/app/rest/.*$") {
       return `/app/rest/${faker.word.noun()}`;
     }
-    if (pattern === '^http://.*$') {
+    if (pattern === "^http://.*$") {
       return faker.internet.url();
     }
 
@@ -225,38 +225,38 @@ export class DataGenerator {
     }
 
     switch (rule.type) {
-      case 'string':
+      case "string":
         return (
-          typeof value === 'string' &&
+          typeof value === "string" &&
           (!rule.minLength || value.length >= rule.minLength) &&
           (!rule.maxLength || value.length <= rule.maxLength)
         );
-      case 'number':
+      case "number":
         return (
-          typeof value === 'number' &&
+          typeof value === "number" &&
           (!rule.min || value >= rule.min) &&
           (!rule.max || value <= rule.max)
         );
-      case 'boolean':
-        return typeof value === 'boolean';
-      case 'email':
-        return typeof value === 'string' && value.includes('@');
-      case 'url':
+      case "boolean":
+        return typeof value === "boolean";
+      case "email":
+        return typeof value === "string" && value.includes("@");
+      case "url":
         return (
-          typeof value === 'string' &&
-          (value.startsWith('http://') || value.startsWith('https://'))
+          typeof value === "string" &&
+          (value.startsWith("http://") || value.startsWith("https://"))
         );
-      case 'uuid':
+      case "uuid":
         return (
-          typeof value === 'string' &&
+          typeof value === "string" &&
           /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-            value
+            value,
           )
         );
-      case 'date':
-        return typeof value === 'string' && !isNaN(Date.parse(value));
-      case 'regex':
-        return typeof value === 'string' && rule.pattern
+      case "date":
+        return typeof value === "string" && !isNaN(Date.parse(value));
+      case "regex":
+        return typeof value === "string" && rule.pattern
           ? new RegExp(rule.pattern).test(value)
           : false;
       default:

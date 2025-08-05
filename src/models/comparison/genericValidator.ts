@@ -1,12 +1,12 @@
 export interface ValidationRule {
   type:
-    | 'string'
-    | 'number'
-    | 'boolean'
-    | 'object'
-    | 'array'
-    | 'required'
-    | 'optional';
+    | "string"
+    | "number"
+    | "boolean"
+    | "object"
+    | "array"
+    | "required"
+    | "optional";
   minLength?: number;
   maxLength?: number;
   pattern?: string;
@@ -31,7 +31,7 @@ export class GenericValidator {
       ignoreFields?: string[];
       allowExtraFields?: boolean;
       strictTypeChecking?: boolean;
-    }
+    },
   ): ValidationResult {
     const result: ValidationResult = {
       isValid: true,
@@ -90,7 +90,7 @@ export class GenericValidator {
               actual: actualType,
             });
             result.errors.push(
-              `Type mismatch for ${key}: expected ${expectedType}, got ${actualType}`
+              `Type mismatch for ${key}: expected ${expectedType}, got ${actualType}`,
             );
             result.isValid = false;
           }
@@ -114,10 +114,10 @@ export class GenericValidator {
     fieldName: string,
     actualValue: any,
     expectedValue: any,
-    result: ValidationResult
+    result: ValidationResult,
   ): void {
     // String validation
-    if (typeof expectedValue === 'string' && typeof actualValue === 'string') {
+    if (typeof expectedValue === "string" && typeof actualValue === "string") {
       if (expectedValue.length > 0 && actualValue.length === 0) {
         result.errors.push(`Field ${fieldName} cannot be empty`);
         result.isValid = false;
@@ -126,14 +126,14 @@ export class GenericValidator {
 
     // Object validation
     if (
-      typeof expectedValue === 'object' &&
+      typeof expectedValue === "object" &&
       expectedValue !== null &&
-      typeof actualValue === 'object' &&
+      typeof actualValue === "object" &&
       actualValue !== null
     ) {
       if (Array.isArray(expectedValue) !== Array.isArray(actualValue)) {
         result.errors.push(
-          `Field ${fieldName}: expected ${Array.isArray(expectedValue) ? 'array' : 'object'}, got ${Array.isArray(actualValue) ? 'array' : 'object'}`
+          `Field ${fieldName}: expected ${Array.isArray(expectedValue) ? "array" : "object"}, got ${Array.isArray(actualValue) ? "array" : "object"}`,
         );
         result.isValid = false;
       }
@@ -160,12 +160,12 @@ export class GenericValidator {
       ignoreFields?: string[];
       allowExtraFields?: boolean;
       strictTypeChecking?: boolean;
-    }
+    },
   ): ValidationResult {
-    if (!response || typeof response !== 'object') {
+    if (!response || typeof response !== "object") {
       return {
         isValid: false,
-        errors: ['Response is not a valid object'],
+        errors: ["Response is not a valid object"],
         warnings: [],
         missingFields: [],
         extraFields: [],
@@ -186,7 +186,7 @@ export class GenericValidator {
       ignoreFields?: string[];
       allowExtraFields?: boolean;
       strictTypeChecking?: boolean;
-    }
+    },
   ): boolean {
     const result = this.validateDataClass(data, expectedClass, options);
     return result.isValid;
@@ -214,7 +214,7 @@ export class GenericValidator {
       parts.push(`Type mismatches: ${result.typeMismatches.length}`);
     }
 
-    return parts.join(', ') || 'No issues found';
+    return parts.join(", ") || "No issues found";
   }
 }
 

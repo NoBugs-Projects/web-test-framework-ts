@@ -1,4 +1,4 @@
-import { networkInterfaces } from 'os';
+import { networkInterfaces } from "os";
 
 /**
  * Get the local IP address for the machine
@@ -11,7 +11,7 @@ export async function getIPAddress(): Promise<string> {
     if (interfaceInfo) {
       for (const info of interfaceInfo) {
         // Skip internal (i.e. 127.0.0.1) and non-IPv4 addresses
-        if (info.family === 'IPv4' && !info.internal) {
+        if (info.family === "IPv4" && !info.internal) {
           return info.address;
         }
       }
@@ -19,7 +19,7 @@ export async function getIPAddress(): Promise<string> {
   }
 
   // Fallback to localhost if no external IP found
-  return '127.0.0.1';
+  return "127.0.0.1";
 }
 
 /**

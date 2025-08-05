@@ -26,7 +26,7 @@ export class Logger {
 
   private formatMessage(level: string, message: string, data?: any): string {
     const timestamp = new Date().toISOString();
-    const dataString = data ? `\n${JSON.stringify(data, null, 2)}` : '';
+    const dataString = data ? `\n${JSON.stringify(data, null, 2)}` : "";
     return `[${timestamp}] ${level}: ${message}${dataString}`;
   }
 
@@ -34,7 +34,7 @@ export class Logger {
     level: number,
     levelName: string,
     message: string,
-    data?: any
+    data?: any,
   ): void {
     if (level <= this.logLevel) {
       const formattedMessage = this.formatMessage(levelName, message, data);
@@ -52,19 +52,19 @@ export class Logger {
   }
 
   error(message: string, data?: any): void {
-    this.log(0, 'ERROR', message, data);
+    this.log(0, "ERROR", message, data);
   }
 
   warn(message: string, data?: any): void {
-    this.log(1, 'WARN', message, data);
+    this.log(1, "WARN", message, data);
   }
 
   info(message: string, data?: any): void {
-    this.log(2, 'INFO', message, data);
+    this.log(2, "INFO", message, data);
   }
 
   debug(message: string, data?: any): void {
-    this.log(3, 'DEBUG', message, data);
+    this.log(3, "DEBUG", message, data);
   }
 
   // HTTP request logging
@@ -72,7 +72,7 @@ export class Logger {
     method: string,
     url: string,
     data?: any,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
   ): void {
     this.info(`HTTP ${method} Request`, {
       method,
@@ -86,9 +86,9 @@ export class Logger {
   logResponse(
     status: number,
     data?: any,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
   ): void {
-    const level = status >= 400 ? 'error' : status >= 300 ? 'warn' : 'info';
+    const level = status >= 400 ? "error" : status >= 300 ? "warn" : "info";
     this[level](`HTTP Response (${status})`, {
       status,
       data,
@@ -98,21 +98,21 @@ export class Logger {
 
   // Sanitize headers to remove sensitive information
   private sanitizeHeaders(
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
   ): Record<string, string> {
     if (!headers) return {};
 
     const sanitized: Record<string, string> = {};
     const sensitiveKeys = [
-      'authorization',
-      'cookie',
-      'x-csrf-token',
-      'x-tc-csrf-token',
+      "authorization",
+      "cookie",
+      "x-csrf-token",
+      "x-tc-csrf-token",
     ];
 
     for (const [key, value] of Object.entries(headers)) {
       if (sensitiveKeys.includes(key.toLowerCase())) {
-        sanitized[key] = '[REDACTED]';
+        sanitized[key] = "[REDACTED]";
       } else {
         sanitized[key] = value;
       }

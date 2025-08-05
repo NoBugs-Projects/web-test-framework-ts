@@ -1,7 +1,7 @@
-import { test as base } from '@playwright/test';
-import { PageManager } from '../pages/pageManager';
-import { admin } from './loginCredentials';
-import { TestDataStorage } from './testDataStorage';
+import { test as base } from "@playwright/test";
+import { PageManager } from "../pages/pageManager";
+import { admin } from "./loginCredentials";
+import { TestDataStorage } from "./testDataStorage";
 
 // Create a test that automatically logs in as admin and includes testDataStorage
 export const testWithAdmin = base.extend({
@@ -32,4 +32,4 @@ export const testWithLogin = base.extend({
 });
 
 // Export the original test for cases where we don't need login
-export { test, expect } from '@playwright/test';
+export { test, expect } from "@playwright/test";

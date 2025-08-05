@@ -1,9 +1,9 @@
-import { Page, APIResponse } from '@playwright/test';
-import { getIPAddress } from '../utils/getLocalIpAddress';
-import { headers } from '../payloads/headers';
-import { ApiConfig } from '../configs/apiConfig';
-import { Logger } from '../utils/logger';
-import { TestDataStorage } from '../utils/testDataStorage';
+import { Page, APIResponse } from "@playwright/test";
+import { getIPAddress } from "../utils/getLocalIpAddress";
+import { headers } from "../payloads/headers";
+import { ApiConfig } from "../configs/apiConfig";
+import { Logger } from "../utils/logger";
+import { TestDataStorage } from "../utils/testDataStorage";
 
 export interface HttpClientOptions {
   timeout?: number;
@@ -53,7 +53,7 @@ export class HttpClient {
 
   private validateStatus(
     status: number,
-    expectedStatus?: number | number[]
+    expectedStatus?: number | number[],
   ): boolean {
     if (expectedStatus) {
       if (Array.isArray(expectedStatus)) {
@@ -65,10 +65,10 @@ export class HttpClient {
   }
 
   private async makeRequest<T>(
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+    method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
     url: string,
     data?: any,
-    additionalHeaders?: Record<string, string>
+    additionalHeaders?: Record<string, string>,
   ): Promise<ApiResponse<T>> {
     const baseUrl = await this.getBaseUrl();
     const fullUrl = `${baseUrl}${url}`;
@@ -94,19 +94,19 @@ export class HttpClient {
 
     let response: APIResponse;
     switch (method) {
-      case 'GET':
+      case "GET":
         response = await this.page.request.get(fullUrl, requestOptions);
         break;
-      case 'POST':
+      case "POST":
         response = await this.page.request.post(fullUrl, requestOptions);
         break;
-      case 'PUT':
+      case "PUT":
         response = await this.page.request.put(fullUrl, requestOptions);
         break;
-      case 'DELETE':
+      case "DELETE":
         response = await this.page.request.delete(fullUrl, requestOptions);
         break;
-      case 'PATCH':
+      case "PATCH":
         response = await this.page.request.patch(fullUrl, requestOptions);
         break;
       default:
@@ -115,8 +115,8 @@ export class HttpClient {
 
     let responseData: T;
     try {
-      const contentType = response.headers()['content-type'] || '';
-      if (contentType.includes('application/json')) {
+      const contentType = response.headers()["content-type"] || "";
+      if (contentType.includes("application/json")) {
         responseData = await response.json();
       } else {
         responseData = (await response.text()) as T;
@@ -138,7 +138,7 @@ export class HttpClient {
       url: response.url(),
       success: isValidStatus,
       error: !isValidStatus
-        ? typeof responseData === 'string'
+        ? typeof responseData === "string"
           ? responseData
           : `Request failed with status ${status}`
         : undefined,
@@ -148,21 +148,21 @@ export class HttpClient {
   // Core HTTP methods
   async get<T>(
     url: string,
-    additionalHeaders?: Record<string, string>
+    additionalHeaders?: Record<string, string>,
   ): Promise<ApiResponse<T>> {
-    return await this.makeRequest<T>('GET', url, undefined, additionalHeaders);
+    return await this.makeRequest<T>("GET", url, undefined, additionalHeaders);
   }
 
   async post<T>(
     url: string,
     data?: any,
-    additionalHeaders?: Record<string, string>
+    additionalHeaders?: Record<string, string>,
   ): Promise<ApiResponse<T>> {
     const response = await this.makeRequest<T>(
-      'POST',
+      "POST",
       url,
       data,
-      additionalHeaders
+      additionalHeaders,
     );
 
     // Auto-collect created entities for cleanup
@@ -176,29 +176,29 @@ export class HttpClient {
   async put<T>(
     url: string,
     data?: any,
-    additionalHeaders?: Record<string, string>
+    additionalHeaders?: Record<string, string>,
   ): Promise<ApiResponse<T>> {
-    return await this.makeRequest<T>('PUT', url, data, additionalHeaders);
+    return await this.makeRequest<T>("PUT", url, data, additionalHeaders);
   }
 
   async delete<T>(
     url: string,
-    additionalHeaders?: Record<string, string>
+    additionalHeaders?: Record<string, string>,
   ): Promise<ApiResponse<T>> {
     return await this.makeRequest<T>(
-      'DELETE',
+      "DELETE",
       url,
       undefined,
-      additionalHeaders
+      additionalHeaders,
     );
   }
 
   async patch<T>(
     url: string,
     data?: any,
-    additionalHeaders?: Record<string, string>
+    additionalHeaders?: Record<string, string>,
   ): Promise<ApiResponse<T>> {
-    return await this.makeRequest<T>('PATCH', url, data, additionalHeaders);
+    return await this.makeRequest<T>("PATCH", url, data, additionalHeaders);
   }
 
   /**
@@ -207,43 +207,43 @@ export class HttpClient {
   private collectCreatedEntity(
     url: string,
     requestData: any,
-    response: ApiResponse<any>
+    response: ApiResponse<any>,
   ): void {
     try {
       // Determine entity type based on URL and response data
-      if (url.includes('/app/rest/projects') && response.data?.id) {
+      if (url.includes("/app/rest/projects") && response.data?.id) {
         this.testDataStorage.addEntity({
-          type: 'project',
+          type: "project",
           id: response.data.id,
           name: response.data.name,
           cleanupMethod: async () => {
             await this.delete(`/app/rest/projects/id:${response.data.id}`);
           },
         });
-      } else if (url.includes('/app/rest/buildTypes') && response.data?.id) {
+      } else if (url.includes("/app/rest/buildTypes") && response.data?.id) {
         this.testDataStorage.addEntity({
-          type: 'buildType',
+          type: "buildType",
           id: response.data.id,
           name: response.data.name,
           cleanupMethod: async () => {
             await this.delete(`/app/rest/buildTypes/id:${response.data.id}`);
           },
         });
-      } else if (url.includes('/app/rest/users') && response.data?.username) {
+      } else if (url.includes("/app/rest/users") && response.data?.username) {
         this.testDataStorage.addEntity({
-          type: 'user',
+          type: "user",
           id: response.data.username,
           username: response.data.username,
           cleanupMethod: async () => {
             await this.delete(
-              `/app/rest/users/username:${response.data.username}`
+              `/app/rest/users/username:${response.data.username}`,
             );
           },
         });
       }
     } catch (error) {
       // Don't fail the test if entity collection fails
-      console.warn('Failed to collect entity for cleanup:', error);
+      console.warn("Failed to collect entity for cleanup:", error);
     }
   }
 }

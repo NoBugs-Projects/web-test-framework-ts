@@ -1,8 +1,8 @@
-import { Page } from '@playwright/test';
-import { LoginPage } from './login.page';
-import { CreateProject } from './admin/createProject.page';
-import { CreateBuildType } from './admin/createBuildType.page';
-import { ProjectsPage } from './projects.page';
+import { Page } from "@playwright/test";
+import { LoginPage } from "./login.page";
+import { CreateProject } from "./admin/createProject.page";
+import { CreateBuildType } from "./admin/createBuildType.page";
+import { ProjectsPage } from "./projects.page";
 
 export class PageManager {
   private readonly page: Page;

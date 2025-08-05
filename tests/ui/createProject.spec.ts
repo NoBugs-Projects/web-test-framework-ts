@@ -1,13 +1,13 @@
-import { testWithAdmin, expect } from '../../src/utils/testAnnotations';
-import { AdminSteps } from '../../src/adminSteps/adminSteps';
-import { DataGenerator } from '../../src/generator/dataGenerator';
+import { testWithAdmin, expect } from "../../src/utils/testAnnotations";
+import { AdminSteps } from "../../src/adminSteps/adminSteps";
+import { DataGenerator } from "../../src/generator/dataGenerator";
 import {
   HTTP_STATUS,
   TEST_TAGS,
   UI_CONSTANTS,
-} from '../../src/utils/constants';
+} from "../../src/utils/constants";
 
-testWithAdmin.describe('UI Project Creation Tests', () => {
+testWithAdmin.describe("UI Project Creation Tests", () => {
   let adminSteps: AdminSteps;
 
   testWithAdmin.beforeEach(async ({ page }) => {
@@ -15,7 +15,7 @@ testWithAdmin.describe('UI Project Creation Tests', () => {
   });
 
   testWithAdmin(
-    'User should be able to create project via UI',
+    "User should be able to create project via UI",
     { tag: [TEST_TAGS.POSITIVE, TEST_TAGS.CRUD] },
     async ({ testDataStorage, page, pageManager }) => {
       // Step: Generate unique project and build type names using DataGenerator
@@ -27,7 +27,7 @@ testWithAdmin.describe('UI Project Creation Tests', () => {
         .createProjectPage()
         .createProjectModeSelector(
           UI_CONSTANTS.ROOT_PROJECT,
-          UI_CONSTANTS.CREATE_PROJECT_MENU
+          UI_CONSTANTS.CREATE_PROJECT_MENU,
         );
 
       // Step: Create project via UI
@@ -36,13 +36,13 @@ testWithAdmin.describe('UI Project Creation Tests', () => {
         .createProject(
           UI_CONSTANTS.SAMPLE_REPOSITORY_URL,
           projectData.name,
-          buildTypeData.name
+          buildTypeData.name,
         );
 
       // Step: Verify project was created by checking API
       const projectResponse = await adminSteps.expectSuccess(
         () => adminSteps.getProject(projectData.name),
-        HTTP_STATUS.OK
+        HTTP_STATUS.OK,
       );
 
       // Step: Verify project name matches
@@ -55,11 +55,11 @@ testWithAdmin.describe('UI Project Creation Tests', () => {
         .findProjectByName(projectData.name);
 
       await expect(findByProjectName).toBeTruthy();
-    }
+    },
   );
 
   testWithAdmin(
-    'User should not be able to create project without name',
+    "User should not be able to create project without name",
     { tag: [TEST_TAGS.NEGATIVE, TEST_TAGS.CRUD] },
     async ({ testDataStorage, page, pageManager }) => {
       // Step: Generate unique build type name using DataGenerator
@@ -70,14 +70,14 @@ testWithAdmin.describe('UI Project Creation Tests', () => {
         .createProjectPage()
         .createProjectModeSelector(
           UI_CONSTANTS.ROOT_PROJECT,
-          UI_CONSTANTS.CREATE_PROJECT_MENU
+          UI_CONSTANTS.CREATE_PROJECT_MENU,
         );
 
       // Step: Try to create project without name
       await pageManager.createProjectPage().createProject(
         UI_CONSTANTS.SAMPLE_REPOSITORY_URL,
-        '', // Empty project name
-        buildTypeData.name
+        "", // Empty project name
+        buildTypeData.name,
       );
 
       // Step: Verify error message appears
@@ -91,6 +91,6 @@ testWithAdmin.describe('UI Project Creation Tests', () => {
       // Step: Optionally verify specific error message text
       // const errorText = await pageManager.createProjectPage().getErrorMessageText();
       // expect(errorText).toContain('Project name must not be empty');
-    }
+    },
   );
 });

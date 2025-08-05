@@ -1,5 +1,5 @@
-import { Page } from '@playwright/test';
-import { getIPAddress, getPort } from '../utils/getLocalIpAddress';
+import { Page } from "@playwright/test";
+import { getIPAddress, getPort } from "../utils/getLocalIpAddress";
 
 export class ProjectsPage {
   readonly page: Page;

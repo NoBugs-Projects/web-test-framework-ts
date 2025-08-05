@@ -1,8 +1,8 @@
-import { Page } from '@playwright/test';
-import { BaseRequester, RequestContext, RequestOptions } from './baseRequester';
-import { ApiResponse } from './httpClient';
-import { DataGenerator } from '../generator/dataGenerator';
-import { ModelAssertions } from '../models/comparison/modelAssertions';
+import { Page } from "@playwright/test";
+import { BaseRequester, RequestContext, RequestOptions } from "./baseRequester";
+import { ApiResponse } from "./httpClient";
+import { DataGenerator } from "../generator/dataGenerator";
+import { ModelAssertions } from "../models/comparison/modelAssertions";
 
 export interface ApiRequestOptions extends RequestOptions {
   validateModel?: boolean;
@@ -13,7 +13,7 @@ export interface ApiRequestOptions extends RequestOptions {
 
 export interface ApiEndpoint {
   path: string;
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   description: string;
   expectedStatus?: number | number[];
   requiresAuth?: boolean;
@@ -32,113 +32,113 @@ export class ApiRequester extends BaseRequester {
    */
   private initializeEndpoints(): void {
     // TeamCity API endpoints
-    this.endpoints.set('server.info', {
-      path: '/app/rest/server',
-      method: 'GET',
-      description: 'Get server information',
+    this.endpoints.set("server.info", {
+      path: "/app/rest/server",
+      method: "GET",
+      description: "Get server information",
       expectedStatus: 200,
     });
 
-    this.endpoints.set('projects.create', {
-      path: '/app/rest/projects',
-      method: 'POST',
-      description: 'Create a new project',
-      expectedStatus: 200,
-      requiresAuth: true,
-    });
-
-    this.endpoints.set('projects.get', {
-      path: '/app/rest/projects',
-      method: 'GET',
-      description: 'Get all projects',
-      expectedStatus: 200,
-    });
-
-    this.endpoints.set('project.get', {
-      path: '/app/rest/projects/id:{id}',
-      method: 'GET',
-      description: 'Get project by ID',
-      expectedStatus: 200,
-    });
-
-    this.endpoints.set('project.delete', {
-      path: '/app/rest/projects/id:{id}',
-      method: 'DELETE',
-      description: 'Delete project by ID',
-      expectedStatus: 204,
-    });
-
-    this.endpoints.set('buildTypes.create', {
-      path: '/app/rest/buildTypes',
-      method: 'POST',
-      description: 'Create a new build type',
+    this.endpoints.set("projects.create", {
+      path: "/app/rest/projects",
+      method: "POST",
+      description: "Create a new project",
       expectedStatus: 200,
       requiresAuth: true,
     });
 
-    this.endpoints.set('buildTypes.get', {
-      path: '/app/rest/buildTypes',
-      method: 'GET',
-      description: 'Get all build types',
+    this.endpoints.set("projects.get", {
+      path: "/app/rest/projects",
+      method: "GET",
+      description: "Get all projects",
       expectedStatus: 200,
     });
 
-    this.endpoints.set('buildType.get', {
-      path: '/app/rest/buildTypes/id:{id}',
-      method: 'GET',
-      description: 'Get build type by ID',
+    this.endpoints.set("project.get", {
+      path: "/app/rest/projects/id:{id}",
+      method: "GET",
+      description: "Get project by ID",
       expectedStatus: 200,
     });
 
-    this.endpoints.set('buildType.delete', {
-      path: '/app/rest/buildTypes/id:{id}',
-      method: 'DELETE',
-      description: 'Delete build type by ID',
+    this.endpoints.set("project.delete", {
+      path: "/app/rest/projects/id:{id}",
+      method: "DELETE",
+      description: "Delete project by ID",
       expectedStatus: 204,
     });
 
-    this.endpoints.set('buildTypes.create', {
-      path: '/app/rest/buildTypes',
-      method: 'POST',
-      description: 'Create new build type',
+    this.endpoints.set("buildTypes.create", {
+      path: "/app/rest/buildTypes",
+      method: "POST",
+      description: "Create a new build type",
+      expectedStatus: 200,
+      requiresAuth: true,
+    });
+
+    this.endpoints.set("buildTypes.get", {
+      path: "/app/rest/buildTypes",
+      method: "GET",
+      description: "Get all build types",
+      expectedStatus: 200,
+    });
+
+    this.endpoints.set("buildType.get", {
+      path: "/app/rest/buildTypes/id:{id}",
+      method: "GET",
+      description: "Get build type by ID",
+      expectedStatus: 200,
+    });
+
+    this.endpoints.set("buildType.delete", {
+      path: "/app/rest/buildTypes/id:{id}",
+      method: "DELETE",
+      description: "Delete build type by ID",
+      expectedStatus: 204,
+    });
+
+    this.endpoints.set("buildTypes.create", {
+      path: "/app/rest/buildTypes",
+      method: "POST",
+      description: "Create new build type",
       expectedStatus: 200,
     });
 
     // User management endpoints
-    this.endpoints.set('users.create', {
-      path: '/app/rest/users',
-      method: 'POST',
-      description: 'Create a new user',
+    this.endpoints.set("users.create", {
+      path: "/app/rest/users",
+      method: "POST",
+      description: "Create a new user",
       expectedStatus: 200,
       requiresAuth: true,
     });
 
-    this.endpoints.set('user.get', {
-      path: '/app/rest/users/username:{username}',
-      method: 'GET',
-      description: 'Get user by username',
+    this.endpoints.set("user.get", {
+      path: "/app/rest/users/username:{username}",
+      method: "GET",
+      description: "Get user by username",
       expectedStatus: 200,
     });
 
-    this.endpoints.set('user.delete', {
-      path: '/app/rest/users/username:{username}',
-      method: 'DELETE',
-      description: 'Delete user by username',
+    this.endpoints.set("user.delete", {
+      path: "/app/rest/users/username:{username}",
+      method: "DELETE",
+      description: "Delete user by username",
       expectedStatus: 204,
     });
 
     // Role management endpoints
-    this.endpoints.set('project.roles.get', {
-      path: '/app/rest/projects/id:{id}/roles',
-      method: 'GET',
-      description: 'Get project roles',
+    this.endpoints.set("project.roles.get", {
+      path: "/app/rest/projects/id:{id}/roles",
+      method: "GET",
+      description: "Get project roles",
       expectedStatus: 200,
     });
 
-    this.endpoints.set('project.role.assign', {
-      path: '/app/rest/projects/id:{id}/roles',
-      method: 'PUT',
-      description: 'Assign role to user in project',
+    this.endpoints.set("project.role.assign", {
+      path: "/app/rest/projects/id:{id}/roles",
+      method: "PUT",
+      description: "Assign role to user in project",
       expectedStatus: 200,
     });
   }
@@ -150,7 +150,7 @@ export class ApiRequester extends BaseRequester {
     endpointName: string,
     data?: any,
     params?: Record<string, string>,
-    options?: ApiRequestOptions
+    options?: ApiRequestOptions,
   ): Promise<ApiResponse<T>> {
     const endpoint = this.endpoints.get(endpointName);
     if (!endpoint) {
@@ -186,7 +186,7 @@ export class ApiRequester extends BaseRequester {
     data?: any,
     params?: Record<string, string>,
     options?: ApiRequestOptions,
-    maxRetries?: number
+    maxRetries?: number,
   ): Promise<ApiResponse<T>> {
     const endpoint = this.endpoints.get(endpointName);
     if (!endpoint) {
@@ -223,15 +223,15 @@ export class ApiRequester extends BaseRequester {
       data?: any;
       params?: Record<string, string>;
       options?: ApiRequestOptions;
-    }>
+    }>,
   ): Promise<ApiResponse<T>[]> {
     const contexts: RequestContext[] = requests.map((request) => {
       const endpoint = this.endpoints.get(request.endpointName);
       if (!endpoint) {
         // Return a dummy context for unknown endpoints that will fail gracefully
         return {
-          method: 'GET',
-          url: '/invalid/endpoint',
+          method: "GET",
+          url: "/invalid/endpoint",
           data: undefined,
           options: {
             validateResponse: false,
@@ -273,7 +273,7 @@ export class ApiRequester extends BaseRequester {
       params?: Record<string, string>;
       options?: ApiRequestOptions;
     }>,
-    maxConcurrency?: number
+    maxConcurrency?: number,
   ): Promise<ApiResponse<T>[]> {
     const contexts: RequestContext[] = requests.map((request) => {
       const endpoint = this.endpoints.get(request.endpointName);
@@ -310,21 +310,21 @@ export class ApiRequester extends BaseRequester {
   private validateSuccessfullyCreatedEntity<T>(
     response: ApiResponse<T>,
     expectedData: any,
-    entityType: string = 'entity'
+    entityType: string = "entity",
   ): void {
     // Validate success status
     if (!response.success) {
       throw new Error(
-        `${entityType} creation failed: ${response.status} - ${response.error || 'Unknown error'}`
+        `${entityType} creation failed: ${response.status} - ${response.error || "Unknown error"}`,
       );
     }
 
     // Validate response structure contains expected data
-    if (response.data && typeof response.data === 'object') {
+    if (response.data && typeof response.data === "object") {
       ModelAssertions.assertContains(
         response.data,
         expectedData,
-        `${entityType} response validation failed`
+        `${entityType} response validation failed`,
       );
     }
   }
@@ -335,21 +335,21 @@ export class ApiRequester extends BaseRequester {
   private validateRetrievedEntity<T>(
     response: ApiResponse<T>,
     expectedData: any,
-    entityType: string = 'entity'
+    entityType: string = "entity",
   ): void {
     // Validate success status
     if (!response.success) {
       throw new Error(
-        `${entityType} retrieval failed: ${response.status} - ${response.error || 'Unknown error'}`
+        `${entityType} retrieval failed: ${response.status} - ${response.error || "Unknown error"}`,
       );
     }
 
     // Validate response structure contains expected data
-    if (response.data && typeof response.data === 'object') {
+    if (response.data && typeof response.data === "object") {
       ModelAssertions.assertContains(
         response.data,
         expectedData,
-        `${entityType} response validation failed`
+        `${entityType} response validation failed`,
       );
     }
   }
@@ -361,7 +361,7 @@ export class ApiRequester extends BaseRequester {
     endpointName: string,
     entityData: any,
     expectedFields: any,
-    entityType: string = 'Entity'
+    entityType: string = "Entity",
   ): Promise<ApiResponse<T>> {
     const response = await this.executeApiRequest<T>(
       endpointName,
@@ -369,14 +369,14 @@ export class ApiRequester extends BaseRequester {
       undefined,
       {
         validateModel: true,
-      }
+      },
     );
 
     // Apply general validation rule for successfully created entity
     this.validateSuccessfullyCreatedEntity(
       response,
       expectedFields,
-      entityType
+      entityType,
     );
 
     return response;
@@ -389,7 +389,7 @@ export class ApiRequester extends BaseRequester {
     endpointName: string,
     params: Record<string, string>,
     expectedFields: any,
-    entityType: string = 'Entity'
+    entityType: string = "Entity",
   ): Promise<ApiResponse<T>> {
     const response = await this.executeApiRequest<T>(
       endpointName,
@@ -397,7 +397,7 @@ export class ApiRequester extends BaseRequester {
       params,
       {
         validateModel: true,
-      }
+      },
     );
 
     // Apply general validation rule for retrieved entity
@@ -410,18 +410,18 @@ export class ApiRequester extends BaseRequester {
    * Create project with validation
    */
   async createProjectWithValidation(
-    projectData?: any
+    projectData?: any,
   ): Promise<ApiResponse<any>> {
     const data = projectData || DataGenerator.generateProjectData();
 
     return await this.createEntityWithValidation<any>(
-      'projects.create',
+      "projects.create",
       data,
       {
         id: data.id,
         name: data.name,
       },
-      'Project'
+      "Project",
     );
   }
 
@@ -429,19 +429,19 @@ export class ApiRequester extends BaseRequester {
    * Create build type with validation
    */
   async createBuildTypeWithValidation(
-    buildTypeData?: any
+    buildTypeData?: any,
   ): Promise<ApiResponse<any>> {
     const data = buildTypeData || DataGenerator.generateBuildTypeData();
 
     return await this.createEntityWithValidation<any>(
-      'buildTypes.create',
+      "buildTypes.create",
       data,
       {
         id: data.id,
         name: data.name,
         project: data.project,
       },
-      'BuildType'
+      "BuildType",
     );
   }
 
@@ -452,13 +452,13 @@ export class ApiRequester extends BaseRequester {
     const data = userData || DataGenerator.generateUserData();
 
     return await this.createEntityWithValidation<any>(
-      'users.create',
+      "users.create",
       data,
       {
         username: data.username,
         email: data.email,
       },
-      'User'
+      "User",
     );
   }
 
@@ -467,12 +467,12 @@ export class ApiRequester extends BaseRequester {
    */
   async getProjectWithValidation(projectId: string): Promise<ApiResponse<any>> {
     return await this.getEntityWithValidation<any>(
-      'project.get',
+      "project.get",
       { id: projectId },
       {
         id: projectId,
       },
-      'Project'
+      "Project",
     );
   }
 
@@ -480,15 +480,15 @@ export class ApiRequester extends BaseRequester {
    * Get build type with validation
    */
   async getBuildTypeWithValidation(
-    buildTypeId: string
+    buildTypeId: string,
   ): Promise<ApiResponse<any>> {
     return await this.getEntityWithValidation<any>(
-      'buildType.get',
+      "buildType.get",
       { id: buildTypeId },
       {
         id: buildTypeId,
       },
-      'BuildType'
+      "BuildType",
     );
   }
 
@@ -496,7 +496,7 @@ export class ApiRequester extends BaseRequester {
    * Get projects with filtering
    */
   async getProjectsWithFilter(
-    filter?: Record<string, any>
+    filter?: Record<string, any>,
   ): Promise<ApiResponse<any>> {
     const params: Record<string, string> = {};
     if (filter) {
@@ -505,20 +505,20 @@ export class ApiRequester extends BaseRequester {
       });
     }
 
-    return await this.executeApiRequest<any>('projects.get', undefined, params);
+    return await this.executeApiRequest<any>("projects.get", undefined, params);
   }
 
   /**
    * Delete project with confirmation
    */
   async deleteProjectWithConfirmation(
-    projectId: string
+    projectId: string,
   ): Promise<ApiResponse<void>> {
     // First verify project exists
-    await this.executeApiRequest('project.get', undefined, { id: projectId });
+    await this.executeApiRequest("project.get", undefined, { id: projectId });
 
     // Then delete it
-    return await this.executeApiRequest<void>('project.delete', undefined, {
+    return await this.executeApiRequest<void>("project.delete", undefined, {
       id: projectId,
     });
   }
@@ -529,12 +529,12 @@ export class ApiRequester extends BaseRequester {
   async healthCheck(): Promise<boolean> {
     try {
       const response = await this.executeApiRequest<any>(
-        'server.info',
+        "server.info",
         undefined,
         undefined,
         {
           ignoreErrors: true,
-        }
+        },
       );
       return response.success && response.data && !!response.data.version;
     } catch (error) {
@@ -575,33 +575,33 @@ export class ApiRequester extends BaseRequester {
    */
   validateResponseModel<T>(
     response: ApiResponse<T>,
-    expectedModel: any
+    expectedModel: any,
   ): boolean {
     try {
       // Validate success status first
       if (!response.success) {
         this.logger.error(
-          'Response validation failed: request was not successful',
+          "Response validation failed: request was not successful",
           {
             status: response.status,
             error: response.error,
-          }
+          },
         );
         return false;
       }
 
       // Validate response structure contains expected data
-      if (response.data && typeof response.data === 'object') {
+      if (response.data && typeof response.data === "object") {
         ModelAssertions.assertContains(response.data, expectedModel);
         return true;
       }
 
       this.logger.error(
-        'Response validation failed: invalid response data structure'
+        "Response validation failed: invalid response data structure",
       );
       return false;
     } catch (error) {
-      this.logger.error('Response model validation failed', {
+      this.logger.error("Response model validation failed", {
         error: error instanceof Error ? error.message : String(error),
       });
       return false;
@@ -613,7 +613,7 @@ export class ApiRequester extends BaseRequester {
    */
   transformResponseData<T>(
     response: ApiResponse<T>,
-    transformer: (data: T) => any
+    transformer: (data: T) => any,
   ): ApiResponse<any> {
     return {
       ...response,

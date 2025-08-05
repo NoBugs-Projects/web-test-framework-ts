@@ -1,5 +1,5 @@
-import { test as base } from '@playwright/test';
-import { TestDataStorage } from './testDataStorage';
+import { test as base } from "@playwright/test";
+import { TestDataStorage } from "./testDataStorage";
 
 export interface TestFixtures {
   testDataStorage: TestDataStorage;
@@ -20,4 +20,4 @@ export const test = base.extend<TestFixtures>({
   },
 });
 
-export { expect } from '@playwright/test';
+export { expect } from "@playwright/test";

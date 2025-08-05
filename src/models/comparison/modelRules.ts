@@ -1,5 +1,5 @@
 export interface FieldRule {
-  type: 'exact' | 'pattern' | 'regex' | 'custom';
+  type: "exact" | "pattern" | "regex" | "custom";
   value?: any;
   pattern?: string;
   regex?: RegExp;
@@ -23,32 +23,32 @@ export class ModelRulesLoader {
     // For now, we'll use a default configuration
     this.rules = {
       id: {
-        type: 'pattern',
-        pattern: '^[a-zA-Z][a-zA-Z0-9_]*$',
+        type: "pattern",
+        pattern: "^[a-zA-Z][a-zA-Z0-9_]*$",
         optional: false,
       },
       name: {
-        type: 'exact',
+        type: "exact",
         optional: false,
       },
       href: {
-        type: 'pattern',
-        pattern: '^/app/rest/.*$',
+        type: "pattern",
+        pattern: "^/app/rest/.*$",
         optional: true,
       },
       webUrl: {
-        type: 'pattern',
-        pattern: '^http://.*$',
+        type: "pattern",
+        pattern: "^http://.*$",
         optional: true,
       },
       count: {
-        type: 'custom',
+        type: "custom",
         customValidator: (value: any) =>
-          typeof value === 'number' && value >= 0,
+          typeof value === "number" && value >= 0,
         optional: true,
       },
       virtual: {
-        type: 'exact',
+        type: "exact",
         optional: true,
       },
     };
@@ -103,7 +103,7 @@ export class ModelRulesLoader {
     }
 
     switch (rule.type) {
-      case 'exact':
+      case "exact":
         if (rule.value !== undefined) {
           return rule.ignoreCase
             ? String(value).toLowerCase() === String(rule.value).toLowerCase()
@@ -111,20 +111,20 @@ export class ModelRulesLoader {
         }
         return true;
 
-      case 'pattern':
+      case "pattern":
         if (rule.pattern) {
-          const regex = new RegExp(rule.pattern, rule.ignoreCase ? 'i' : '');
+          const regex = new RegExp(rule.pattern, rule.ignoreCase ? "i" : "");
           return regex.test(String(value));
         }
         return true;
 
-      case 'regex':
+      case "regex":
         if (rule.regex) {
           return rule.regex.test(String(value));
         }
         return true;
 
-      case 'custom':
+      case "custom":
         if (rule.customValidator) {
           return rule.customValidator(value);
         }

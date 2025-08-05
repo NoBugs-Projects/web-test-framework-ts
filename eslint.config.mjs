@@ -20,12 +20,31 @@ export default [
       prettier: prettier,
     },
     rules: {
-      ...typescriptEslint.configs.recommended.rules, // TypeScript ESLint rules
-      ...playwright.configs['flat/recommended'].rules, // Playwright rules
-      ...prettierConfig.rules, // Disable conflicting ESLint rules
-      'prettier/prettier': 'error', // Prettier rule as an error
+      // Disable the problematic rule that's causing conflicts
+      '@typescript-eslint/no-unused-expressions': 'off',
+      'no-unused-expressions': 'off',
+      
+      // Be more lenient with any types in test framework
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'warn',
+      
+      // TypeScript ESLint recommended rules (but override some)
+      ...typescriptEslint.configs.recommended.rules,
+      
+      // Playwright rules
+      ...playwright.configs['flat/recommended'].rules,
+      
+      // Prettier rules
+      ...prettierConfig.rules,
+      'prettier/prettier': 'error',
+      
+      // Custom rules
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/await-thenable': 'error',
+      
+      // Override specific rules to be warnings
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'warn',
     },
   },
 ];

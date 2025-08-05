@@ -5,7 +5,7 @@ export interface ApiConfigOptions {
   retries?: number;
   defaultHeaders?: Record<string, string>;
   auth?: {
-    type: 'basic' | 'bearer' | 'token';
+    type: "basic" | "bearer" | "token";
     username?: string;
     password?: string;
     token?: string;
@@ -18,16 +18,16 @@ export class ApiConfig {
   public timeout: number;
   public retries: number;
   public defaultHeaders: Record<string, string>;
-  public auth: ApiConfigOptions['auth'];
+  public auth: ApiConfigOptions["auth"];
 
   constructor(options: ApiConfigOptions = {}) {
-    this.protocol = options.protocol || 'http';
+    this.protocol = options.protocol || "http";
     this.port = options.port || 8111;
     this.timeout = options.timeout || 30000;
     this.retries = options.retries || 3;
     this.defaultHeaders = {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
       ...options.defaultHeaders,
     };
     this.auth = options.auth;
@@ -36,18 +36,18 @@ export class ApiConfig {
   // Factory method for TeamCity configuration
   static createTeamCityConfig(): ApiConfig {
     return new ApiConfig({
-      protocol: 'http',
+      protocol: "http",
       port: 8111,
       timeout: 30000,
       retries: 3,
       defaultHeaders: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
       auth: {
-        type: 'basic',
-        username: 'admin',
-        password: 'admin',
+        type: "basic",
+        username: "admin",
+        password: "admin",
       },
     });
   }
@@ -81,22 +81,22 @@ export class ApiConfig {
     if (!this.auth) return {};
 
     switch (this.auth.type) {
-      case 'basic':
+      case "basic":
         if (this.auth.username && this.auth.password) {
           const credentials = Buffer.from(
-            `${this.auth.username}:${this.auth.password}`
-          ).toString('base64');
+            `${this.auth.username}:${this.auth.password}`,
+          ).toString("base64");
           return { Authorization: `Basic ${credentials}` };
         }
         break;
-      case 'bearer':
+      case "bearer":
         if (this.auth.token) {
           return { Authorization: `Bearer ${this.auth.token}` };
         }
         break;
-      case 'token':
+      case "token":
         if (this.auth.token) {
-          return { 'X-Token': this.auth.token };
+          return { "X-Token": this.auth.token };
         }
         break;
     }

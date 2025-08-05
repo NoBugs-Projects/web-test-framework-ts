@@ -1,5 +1,5 @@
-import { Page, Locator, expect } from '@playwright/test';
-import { getIPAddress, getPort } from '../utils/getLocalIpAddress';
+import { Page, Locator, expect } from "@playwright/test";
+import { getIPAddress, getPort } from "../utils/getLocalIpAddress";
 
 export class LoginPage {
   readonly page: Page;
@@ -9,9 +9,9 @@ export class LoginPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.userNameField = page.locator('#username');
-    this.passwordField = page.locator('#password');
-    this.loginButton = page.getByRole('button', { name: 'Log in' });
+    this.userNameField = page.locator("#username");
+    this.passwordField = page.locator("#password");
+    this.loginButton = page.getByRole("button", { name: "Log in" });
   }
 
   async goToLoginPage() {

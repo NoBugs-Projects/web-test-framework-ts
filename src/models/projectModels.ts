@@ -13,7 +13,7 @@ export interface UpdateProjectRequest {
 }
 
 export interface ProjectSearchRequest {
-  searchType: 'id' | 'name' | 'locator';
+  searchType: "id" | "name" | "locator";
   value: string;
 }
 
@@ -72,17 +72,17 @@ export class CreateProjectRequestModel implements CreateProjectRequest {
     public locator: string,
     public name: string,
     public id: string,
-    public copyAllAssociatedSettings: boolean
+    public copyAllAssociatedSettings: boolean,
   ) {}
 
   static fromObject(
-    obj: Partial<CreateProjectRequest>
+    obj: Partial<CreateProjectRequest>,
   ): CreateProjectRequestModel {
     return new CreateProjectRequestModel(
-      obj.locator || '',
-      obj.name || '',
-      obj.id || '',
-      obj.copyAllAssociatedSettings ?? false
+      obj.locator || "",
+      obj.name || "",
+      obj.id || "",
+      obj.copyAllAssociatedSettings ?? false,
     );
   }
 
@@ -104,24 +104,24 @@ export class ProjectResponseModel implements ProjectResponse {
     public virtual: boolean,
     public href: string,
     public webUrl: string,
-    public parentProject?: ProjectResponse['parentProject'],
-    public buildTypes?: ProjectResponse['buildTypes'],
-    public templates?: ProjectResponse['templates'],
-    public deploymentDashboards?: ProjectResponse['deploymentDashboards'],
-    public parameters?: ProjectResponse['parameters'],
-    public vcsRoots?: ProjectResponse['vcsRoots'],
-    public projectFeatures?: ProjectResponse['projectFeatures'],
-    public projects?: ProjectResponse['projects']
+    public parentProject?: ProjectResponse["parentProject"],
+    public buildTypes?: ProjectResponse["buildTypes"],
+    public templates?: ProjectResponse["templates"],
+    public deploymentDashboards?: ProjectResponse["deploymentDashboards"],
+    public parameters?: ProjectResponse["parameters"],
+    public vcsRoots?: ProjectResponse["vcsRoots"],
+    public projectFeatures?: ProjectResponse["projectFeatures"],
+    public projects?: ProjectResponse["projects"],
   ) {}
 
   static fromObject(obj: any): ProjectResponseModel {
     return new ProjectResponseModel(
-      obj.id || '',
-      obj.name || '',
-      obj.parentProjectId || '',
+      obj.id || "",
+      obj.name || "",
+      obj.parentProjectId || "",
       obj.virtual ?? false,
-      obj.href || '',
-      obj.webUrl || '',
+      obj.href || "",
+      obj.webUrl || "",
       obj.parentProject,
       obj.buildTypes,
       obj.templates,
@@ -129,7 +129,7 @@ export class ProjectResponseModel implements ProjectResponse {
       obj.parameters,
       obj.vcsRoots,
       obj.projectFeatures,
-      obj.projects
+      obj.projects,
     );
   }
 

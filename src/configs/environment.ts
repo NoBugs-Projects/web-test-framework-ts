@@ -1,12 +1,12 @@
-import PropertiesReader from 'properties-reader';
-import path from 'path';
+import PropertiesReader from "properties-reader";
+import path from "path";
 
 export interface EnvironmentConfig {
   baseUrl: string;
   apiVersion: string;
   timeout: number;
   retries: number;
-  logLevel: 'error' | 'warn' | 'info' | 'debug';
+  logLevel: "error" | "warn" | "info" | "debug";
   enableLogging: boolean;
   enableFileLogging: boolean;
   logFilePath?: string;
@@ -31,22 +31,22 @@ export class Environment {
   private loadConfig(): void {
     try {
       this.properties = PropertiesReader(
-        path.join(process.cwd(), 'config.properties')
+        path.join(process.cwd(), "config.properties"),
       );
     } catch (error) {
-      console.warn('Could not load config.properties, using defaults');
+      console.warn("Could not load config.properties, using defaults");
       this.properties = {};
     }
 
     this.config = {
-      baseUrl: this.properties.get('base.url') || 'http://192.168.0.19:8111',
-      apiVersion: this.properties.get('api.version') || 'v1',
-      timeout: parseInt(this.properties.get('timeout')) || 30000,
-      retries: parseInt(this.properties.get('retries')) || 3,
-      logLevel: (this.properties.get('log.level') as any) || 'info',
-      enableLogging: this.properties.get('enable.logging') !== 'false',
-      enableFileLogging: this.properties.get('enable.file.logging') === 'true',
-      logFilePath: this.properties.get('log.file.path'),
+      baseUrl: this.properties.get("base.url") || "http://192.168.0.19:8111",
+      apiVersion: this.properties.get("api.version") || "v1",
+      timeout: parseInt(this.properties.get("timeout")) || 30000,
+      retries: parseInt(this.properties.get("retries")) || 3,
+      logLevel: (this.properties.get("log.level") as any) || "info",
+      enableLogging: this.properties.get("enable.logging") !== "false",
+      enableFileLogging: this.properties.get("enable.file.logging") === "true",
+      logFilePath: this.properties.get("log.file.path"),
     };
   }
 

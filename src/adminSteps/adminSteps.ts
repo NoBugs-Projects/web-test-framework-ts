@@ -1,13 +1,13 @@
-import { Page, expect } from '@playwright/test';
-import { HttpClient, ApiResponse } from '../requesters/httpClient';
-import { DataGenerator } from '../generator/dataGenerator';
-import { HTTP_STATUS, ERROR_MESSAGES, ROLES } from '../utils/constants';
-import { ApiConfig } from '../configs/apiConfig';
-import { ModelAssertions } from '../models/comparison/modelAssertions';
+import { Page, expect } from "@playwright/test";
+import { HttpClient, ApiResponse } from "../requesters/httpClient";
+import { DataGenerator } from "../generator/dataGenerator";
+import { HTTP_STATUS, ERROR_MESSAGES, ROLES } from "../utils/constants";
+import { ApiConfig } from "../configs/apiConfig";
+import { ModelAssertions } from "../models/comparison/modelAssertions";
 import {
   CreateProjectRequestModel,
   ProjectResponseModel,
-} from '../models/projectModels';
+} from "../models/projectModels";
 
 export interface AdminStepsOptions {
   config?: any;
@@ -45,15 +45,15 @@ export class AdminSteps {
    * Create project with automatic unique data generation
    */
   async createProject(
-    projectData?: Partial<CreateProjectRequestModel>
+    projectData?: Partial<CreateProjectRequestModel>,
   ): Promise<{
     request: CreateProjectRequestModel;
     response: ApiResponse<ProjectResponseModel>;
     project: ProjectResponseModel;
   }> {
     // Generate unique data if not provided
-    const uniqueId = this.generateUniqueId('test_project');
-    const uniqueName = this.generateUniqueId('TestProject');
+    const uniqueId = this.generateUniqueId("test_project");
+    const uniqueName = this.generateUniqueId("TestProject");
 
     const finalProjectData = DataGenerator.generateProjectData({
       name: projectData?.name || uniqueName,
@@ -62,8 +62,8 @@ export class AdminSteps {
     });
 
     const response = await this.httpClient.post<ProjectResponseModel>(
-      '/app/rest/projects',
-      finalProjectData
+      "/app/rest/projects",
+      finalProjectData,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -81,7 +81,7 @@ export class AdminSteps {
    * Create a project and get its token (if applicable)
    */
   async createProjectWithToken(
-    projectData?: Partial<CreateProjectRequestModel>
+    projectData?: Partial<CreateProjectRequestModel>,
   ): Promise<{
     project: ProjectResponseModel;
     token?: string;
@@ -102,12 +102,12 @@ export class AdminSteps {
    */
   async deleteProject(projectId: string): Promise<ApiResponse<void>> {
     const response = await this.httpClient.delete<void>(
-      `/app/rest/projects/id:${projectId}`
+      `/app/rest/projects/id:${projectId}`,
     );
 
     if (this.options.validateResponses && !response.success) {
       throw new Error(
-        `Failed to delete project ${projectId}: ${response.error}`
+        `Failed to delete project ${projectId}: ${response.error}`,
       );
     }
 
@@ -119,7 +119,7 @@ export class AdminSteps {
    */
   async getProject(projectId: string): Promise<ProjectResponseModel> {
     const response = await this.httpClient.get<ProjectResponseModel>(
-      `/app/rest/projects/id:${projectId}`
+      `/app/rest/projects/id:${projectId}`,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -135,14 +135,14 @@ export class AdminSteps {
   async getAllProjects(): Promise<ProjectResponseModel[]> {
     const response = await this.httpClient.get<{
       project: ProjectResponseModel[];
-    }>('/app/rest/projects');
+    }>("/app/rest/projects");
 
     if (this.options.validateResponses && !response.success) {
       throw new Error(`Failed to get projects: ${response.error}`);
     }
 
     return response.data.project.map((project) =>
-      ProjectResponseModel.fromObject(project)
+      ProjectResponseModel.fromObject(project),
     );
   }
 
@@ -151,12 +151,12 @@ export class AdminSteps {
    */
   async updateProject(
     projectId: string,
-    updateData: Partial<ProjectResponseModel>
+    updateData: Partial<ProjectResponseModel>,
   ): Promise<ProjectResponseModel> {
     // TeamCity doesn't support PUT for projects, so we'll just return the current project
     const currentProject = await this.getProject(projectId);
     console.warn(
-      `Update project not supported in TeamCity. Returning current project: ${projectId}`
+      `Update project not supported in TeamCity. Returning current project: ${projectId}`,
     );
     return currentProject;
   }
@@ -166,7 +166,7 @@ export class AdminSteps {
    */
   async createMultipleProjects(
     count: number,
-    baseData?: Partial<CreateProjectRequestModel>
+    baseData?: Partial<CreateProjectRequestModel>,
   ): Promise<ProjectResponseModel[]> {
     const projects: ProjectResponseModel[] = [];
 
@@ -192,7 +192,7 @@ export class AdminSteps {
     const allProjects = await this.getAllProjects();
     const projectsToDelete = allProjects.filter(
       (project) =>
-        project.name.includes(pattern) || project.id.includes(pattern)
+        project.name.includes(pattern) || project.id.includes(pattern),
     );
 
     let deletedCount = 0;
@@ -212,19 +212,19 @@ export class AdminSteps {
    * Validate project structure
    */
   async validateProjectStructure(
-    project: ProjectResponseModel
+    project: ProjectResponseModel,
   ): Promise<boolean> {
     try {
       // Simple validation - check that required fields exist and are strings
-      expect(typeof project.id).toBe('string');
-      expect(typeof project.name).toBe('string');
-      expect(typeof project.href).toBe('string');
-      expect(typeof project.webUrl).toBe('string');
+      expect(typeof project.id).toBe("string");
+      expect(typeof project.name).toBe("string");
+      expect(typeof project.href).toBe("string");
+      expect(typeof project.webUrl).toBe("string");
       expect(project.id.length).toBeGreaterThan(0);
       expect(project.name.length).toBeGreaterThan(0);
       return true;
     } catch (error) {
-      console.error('Project structure validation failed:', error);
+      console.error("Project structure validation failed:", error);
       return false;
     }
   }
@@ -233,7 +233,7 @@ export class AdminSteps {
    * Get server information
    */
   async getServerInfo(): Promise<any> {
-    const response = await this.httpClient.get<any>('/app/rest/server');
+    const response = await this.httpClient.get<any>("/app/rest/server");
 
     if (this.options.validateResponses && !response.success) {
       throw new Error(`Failed to get server info: ${response.error}`);
@@ -258,7 +258,7 @@ export class AdminSteps {
    * Get project token (placeholder for future implementation)
    */
   private async getProjectToken(
-    projectId: string
+    projectId: string,
   ): Promise<string | undefined> {
     // This is a placeholder - in TeamCity, projects don't have tokens
     // But this could be implemented for other systems
@@ -269,7 +269,7 @@ export class AdminSteps {
    * Batch operations
    */
   async batchCreateProjects(
-    projectDataList: Partial<CreateProjectRequestModel>[]
+    projectDataList: Partial<CreateProjectRequestModel>[],
   ): Promise<ProjectResponseModel[]> {
     const results: ProjectResponseModel[] = [];
 
@@ -282,7 +282,7 @@ export class AdminSteps {
   }
 
   async batchDeleteProjects(
-    projectIds: string[]
+    projectIds: string[],
   ): Promise<{ success: string[]; failed: string[] }> {
     const success: string[] = [];
     const failed: string[] = [];
@@ -301,11 +301,11 @@ export class AdminSteps {
 
   // Build Type Management Methods
   async createBuildType(
-    buildTypeData?: Partial<any>
+    buildTypeData?: Partial<any>,
   ): Promise<ApiResponse<any>> {
     // Generate unique build type ID if not provided
-    const uniqueId = this.generateUniqueId('test_build_type');
-    const uniqueName = this.generateUniqueId('TestBuildType');
+    const uniqueId = this.generateUniqueId("test_build_type");
+    const uniqueName = this.generateUniqueId("TestBuildType");
 
     const finalBuildTypeData = DataGenerator.generateBuildTypeData({
       id: buildTypeData?.id || uniqueId,
@@ -314,13 +314,13 @@ export class AdminSteps {
     });
 
     const response = await this.httpClient.post<any>(
-      '/app/rest/buildTypes',
-      finalBuildTypeData
+      "/app/rest/buildTypes",
+      finalBuildTypeData,
     );
 
     if (this.options.validateResponses && !response.success) {
       // Preserve the original server error message for better error handling
-      const errorMessage = response.error || response.data || 'Unknown error';
+      const errorMessage = response.error || response.data || "Unknown error";
       throw new Error(`Failed to create build type: ${errorMessage}`);
     }
 
@@ -329,12 +329,12 @@ export class AdminSteps {
 
   async getBuildType(buildTypeId: string): Promise<ApiResponse<any>> {
     const response = await this.httpClient.get<any>(
-      `/app/rest/buildTypes/id:${buildTypeId}`
+      `/app/rest/buildTypes/id:${buildTypeId}`,
     );
 
     if (this.options.validateResponses && !response.success) {
       throw new Error(
-        `Failed to get build type ${buildTypeId}: ${response.error}`
+        `Failed to get build type ${buildTypeId}: ${response.error}`,
       );
     }
 
@@ -343,12 +343,12 @@ export class AdminSteps {
 
   async deleteBuildType(buildTypeId: string): Promise<ApiResponse<void>> {
     const response = await this.httpClient.delete<void>(
-      `/app/rest/buildTypes/id:${buildTypeId}`
+      `/app/rest/buildTypes/id:${buildTypeId}`,
     );
 
     if (this.options.validateResponses && !response.success) {
       throw new Error(
-        `Failed to delete build type ${buildTypeId}: ${response.error}`
+        `Failed to delete build type ${buildTypeId}: ${response.error}`,
       );
     }
 
@@ -356,7 +356,7 @@ export class AdminSteps {
   }
 
   async getAllBuildTypes(): Promise<ApiResponse<any>> {
-    const response = await this.httpClient.get<any>('/app/rest/buildTypes');
+    const response = await this.httpClient.get<any>("/app/rest/buildTypes");
 
     if (this.options.validateResponses && !response.success) {
       throw new Error(`Failed to get build types: ${response.error}`);
@@ -368,7 +368,7 @@ export class AdminSteps {
   // User Management Methods
   async createUser(userData?: Partial<any>): Promise<ApiResponse<any>> {
     // Generate unique username if not provided
-    const uniqueUsername = this.generateUniqueId('test_user');
+    const uniqueUsername = this.generateUniqueId("test_user");
 
     const finalUserData = DataGenerator.generateUserData({
       username: userData?.username || uniqueUsername,
@@ -376,8 +376,8 @@ export class AdminSteps {
     });
 
     const response = await this.httpClient.post<any>(
-      '/app/rest/users',
-      finalUserData
+      "/app/rest/users",
+      finalUserData,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -389,7 +389,7 @@ export class AdminSteps {
 
   async getUser(username: string): Promise<ApiResponse<any>> {
     const response = await this.httpClient.get<any>(
-      `/app/rest/users/username:${username}`
+      `/app/rest/users/username:${username}`,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -401,7 +401,7 @@ export class AdminSteps {
 
   async deleteUser(username: string): Promise<ApiResponse<void>> {
     const response = await this.httpClient.delete<void>(
-      `/app/rest/users/username:${username}`
+      `/app/rest/users/username:${username}`,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -415,7 +415,7 @@ export class AdminSteps {
   async assignProjectRole(
     projectId: string,
     username: string,
-    role: string
+    role: string,
   ): Promise<ApiResponse<any>> {
     const roleData = {
       username,
@@ -425,12 +425,12 @@ export class AdminSteps {
     // TeamCity uses PUT for role assignment, not POST
     const response = await this.httpClient.put<any>(
       `/app/rest/projects/id:${projectId}/roles`,
-      roleData
+      roleData,
     );
 
     if (this.options.validateResponses && !response.success) {
       throw new Error(
-        `Failed to assign role ${role} to user ${username} in project ${projectId}: ${response.error}`
+        `Failed to assign role ${role} to user ${username} in project ${projectId}: ${response.error}`,
       );
     }
 
@@ -439,12 +439,12 @@ export class AdminSteps {
 
   async getProjectRoles(projectId: string): Promise<ApiResponse<any>> {
     const response = await this.httpClient.get<any>(
-      `/app/rest/projects/id:${projectId}/roles`
+      `/app/rest/projects/id:${projectId}/roles`,
     );
 
     if (this.options.validateResponses && !response.success) {
       throw new Error(
-        `Failed to get roles for project ${projectId}: ${response.error}`
+        `Failed to get roles for project ${projectId}: ${response.error}`,
       );
     }
 
@@ -457,17 +457,17 @@ export class AdminSteps {
   async expectSuccess<T>(
     operation: () => Promise<T>,
     expectedStatus: number = HTTP_STATUS.OK,
-    expectedSuccessMessage?: string
+    expectedSuccessMessage?: string,
   ): Promise<T> {
     try {
       const response = await operation();
 
       // Check if the response has a status property (ApiResponse)
-      if (response && typeof response === 'object' && 'status' in response) {
+      if (response && typeof response === "object" && "status" in response) {
         const apiResponse = response as any;
         if (apiResponse.status !== expectedStatus) {
           throw new Error(
-            `Expected status ${expectedStatus} but got ${apiResponse.status}`
+            `Expected status ${expectedStatus} but got ${apiResponse.status}`,
           );
         }
 
@@ -480,7 +480,7 @@ export class AdminSteps {
               .includes(expectedSuccessMessage.toLowerCase())
           ) {
             throw new Error(
-              `Expected success message to contain "${expectedSuccessMessage}" but got: ${responseData}`
+              `Expected success message to contain "${expectedSuccessMessage}" but got: ${responseData}`,
             );
           }
         }
@@ -490,7 +490,7 @@ export class AdminSteps {
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(
-          `Expected operation to succeed with status ${expectedStatus} but it failed: ${error.message}`
+          `Expected operation to succeed with status ${expectedStatus} but it failed: ${error.message}`,
         );
       }
       throw error;
@@ -503,12 +503,12 @@ export class AdminSteps {
   async expectFailure<T>(
     operation: () => Promise<T>,
     expectedStatus: number,
-    expectedErrorMessage?: string
+    expectedErrorMessage?: string,
   ): Promise<void> {
     try {
       const response = await operation();
       throw new Error(
-        `Expected operation to fail with status ${expectedStatus} but it succeeded`
+        `Expected operation to fail with status ${expectedStatus} but it succeeded`,
       );
     } catch (error) {
       if (error instanceof Error) {
@@ -516,12 +516,12 @@ export class AdminSteps {
         if (
           !error.message.includes(`status ${expectedStatus}`) &&
           !error.message.includes(
-            `Request failed with status ${expectedStatus}`
+            `Request failed with status ${expectedStatus}`,
           ) &&
           !error.message.includes(`status code: ${expectedStatus}`)
         ) {
           throw new Error(
-            `Expected status ${expectedStatus} but got different error: ${error.message}`
+            `Expected status ${expectedStatus} but got different error: ${error.message}`,
           );
         }
 
@@ -535,7 +535,7 @@ export class AdminSteps {
               .includes(expectedErrorMessage.toLowerCase())
           ) {
             throw new Error(
-              `Expected error message to contain "${expectedErrorMessage}" but got: ${fullErrorMessage}`
+              `Expected error message to contain "${expectedErrorMessage}" but got: ${fullErrorMessage}`,
             );
           }
         }
