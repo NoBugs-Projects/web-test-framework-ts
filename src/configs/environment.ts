@@ -34,20 +34,26 @@ export class Environment {
       this.properties = PropertiesReader(
         path.join(process.cwd(), "config.properties"),
       );
-    } catch (error) {
+    } catch {
       console.warn("Could not load config.properties, using defaults");
       this.properties = {};
     }
 
     // Detect CI environment
-    const isCI = process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
+    const isCI =
+      process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
 
     this.config = {
       baseUrl: this.getBaseUrlForEnvironment(isCI),
       apiVersion: this.properties.get("api.version") || "v1",
       timeout: parseInt(this.properties.get("timeout")) || 30000,
       retries: parseInt(this.properties.get("retries")) || 3,
-      logLevel: (this.properties.get("log.level") as any) || "info",
+      logLevel:
+        (this.properties.get("log.level") as
+          | "error"
+          | "warn"
+          | "info"
+          | "debug") || "info",
       enableLogging: this.properties.get("enable.logging") !== "false",
       enableFileLogging: this.properties.get("enable.file.logging") === "true",
       logFilePath: this.properties.get("log.file.path"),
@@ -65,7 +71,7 @@ export class Environment {
       // Fallback to localhost if HOST is not set
       return "http://localhost:8111";
     }
-    
+
     // In local environment, use the configured base URL
     return this.properties.get("base.url") || "http://192.168.0.19:8111";
   }
