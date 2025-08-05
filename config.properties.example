@@ -1,0 +1,8 @@
+# TeamCity Test Framework Configuration
+# Copy this file to config.properties and update with your actual values
+
+host.ip=192.168.0.19
+host.port=8111
+superuser.token=1343419375730421953
+admin.username=admin
+admin.password=admin 
