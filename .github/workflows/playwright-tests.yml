@@ -1,0 +1,102 @@
+name: Playwright Tests with TeamCity Setup
+description: Setup TeamCity server and run Playwright tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'zulu'
+
+    # Install net-tools for ifconfig command
+    - name: Install net-tools
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y net-tools
+
+    - name: Set up host environment variable
+      shell: bash
+      # Get IP address for container communication
+      run: |
+        echo "HOST=$(ifconfig | grep -E "([0-9]{1,3}\.){3}[0-9]{1,3}" | grep -v 127.0.0.1 | awk '{ print $2 }' | cut -f2 -d: | head -n1)" >> $GITHUB_ENV
+
+    - name: Update config.properties with host
+      shell: bash
+      run: |
+        sed -i "s/^base\.url=.*/base.url=http:\/\/$HOST:8111/" config.properties
+
+    - name: Run TeamCity server
+      shell: bash
+      run: |
+        docker run -u 0 -d --name teamcity-server \
+        -v $(pwd)/tmp/teamcity_server/datadir:/data/teamcity_server/datadir \
+        -v $(pwd)/tmp/teamcity_server/logs:/opt/teamcity/logs \
+        -p 8111:8111 \
+        jetbrains/teamcity-server:2023.11.1
+
+    - name: Wait for TeamCity server to start
+      shell: bash
+      run: |
+        echo "Waiting for TeamCity server to start..."
+        timeout 300 bash -c 'until curl -f http://localhost:8111/app/rest/server; do sleep 5; done'
+        echo "TeamCity server is ready!"
+
+    - name: Set up superUserToken environment variable
+      shell: bash
+      # Extract super user token from server logs
+      run: |
+        echo "SUPER_USER_TOKEN=$(docker logs teamcity-server | grep 'Super user authentication token' | tail -n 1 | awk '{print $6}')" >> $GITHUB_ENV
+        echo "Super user token: $SUPER_USER_TOKEN"
+
+    - name: Update config.properties with token
+      shell: bash
+      run: |
+        sed -i "s/^superUserToken=.*/superUserToken=$SUPER_USER_TOKEN/" config.properties
+
+    - name: Run Playwright tests
+      run: npx playwright test
+      env:
+        HOST: ${{ env.HOST }}
+        SUPER_USER_TOKEN: ${{ env.SUPER_USER_TOKEN }}
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: |
+          playwright-report/
+          test-results/
+        retention-days: 30
+
+    - name: Upload trace on failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: playwright-trace
+        path: test-results/
+        retention-days: 30 
