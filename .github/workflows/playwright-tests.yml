@@ -8,24 +8,15 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  setup-teamcity:
     runs-on: ubuntu-latest
+    outputs:
+      host: ${{ env.HOST }}
+      super-user-token: ${{ env.SUPER_USER_TOKEN }}
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Install Playwright browsers
-      run: npx playwright install --with-deps
 
     - name: Set up JDK
       uses: actions/setup-java@v4
@@ -77,11 +68,45 @@ jobs:
       run: |
         sed -i "s/^superUserToken=.*/superUserToken=$SUPER_USER_TOKEN/" config.properties
 
+    - name: Commit updated config
+      shell: bash
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add config.properties
+        git commit -m "Update config with TeamCity settings" || echo "No changes to commit"
+
+  test:
+    runs-on: ubuntu-latest
+    needs: setup-teamcity
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps
+
+    - name: Update config with TeamCity settings
+      shell: bash
+      run: |
+        sed -i "s/^base\.url=.*/base.url=http:\/\/${{ needs.setup-teamcity.outputs.host }}:8111/" config.properties
+        sed -i "s/^superUserToken=.*/superUserToken=${{ needs.setup-teamcity.outputs.super-user-token }}/" config.properties
+
     - name: Run Playwright tests
       run: npx playwright test
       env:
-        HOST: ${{ env.HOST }}
-        SUPER_USER_TOKEN: ${{ env.SUPER_USER_TOKEN }}
+        HOST: ${{ needs.setup-teamcity.outputs.host }}
+        SUPER_USER_TOKEN: ${{ needs.setup-teamcity.outputs.super-user-token }}
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
