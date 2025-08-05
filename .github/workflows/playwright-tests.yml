@@ -18,6 +18,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps
+
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
@@ -49,12 +61,11 @@ jobs:
         -p 8111:8111 \
         jetbrains/teamcity-server:2023.11.1
 
-    - name: Wait for TeamCity server to start
+
+    - name: Set up TeamCity server
       shell: bash
-      run: |
-        echo "Waiting for TeamCity server to start..."
-        timeout 300 bash -c 'until curl -f http://localhost:8111/app/rest/server; do sleep 5; done'
-        echo "TeamCity server is ready!"
+      # Configure server on first start (accept license, choose database, etc.)
+      run: npx playwright test tests/setup/teamcitySetup.spec.ts --project=chromium
 
     - name: Set up superUserToken environment variable
       shell: bash
@@ -67,14 +78,6 @@ jobs:
       shell: bash
       run: |
         sed -i "s/^superUserToken=.*/superUserToken=$SUPER_USER_TOKEN/" config.properties
-
-    - name: Commit updated config
-      shell: bash
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add config.properties
-        git commit -m "Update config with TeamCity settings" || echo "No changes to commit"
 
   test:
     runs-on: ubuntu-latest

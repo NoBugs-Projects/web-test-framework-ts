@@ -64,34 +64,7 @@ export class HttpClient {
       }
       return status === expectedStatus;
     }
-    return this.options.validateStatus!(status);
-  }
-
-  private createMockResponse<T>(
-    method: string,
-    url: string,
-    data?: any,
-  ): ApiResponse<T> {
-    // Create mock responses for CI environment
-    const mockData = {
-      id: "mock-id-" + Date.now(),
-      name: "Mock Project",
-      projectId: "mock-project-id",
-      href: "/app/rest/projects/mock-project-id",
-      webUrl: "http://localhost:8111/project.html?projectId=mock-project-id",
-      ...data,
-    };
-
-    return {
-      status: 200,
-      data: mockData as T,
-      headers: {
-        "Content-Type": "application/json",
-        "X-TC-CSRF-TOKEN": "mock-token",
-      },
-      url: url,
-      success: true,
-    };
+    return status >= 200 && status < 300;
   }
 
   private async makeRequest<T>(
@@ -100,12 +73,6 @@ export class HttpClient {
     data?: any,
     additionalHeaders?: Record<string, string>,
   ): Promise<ApiResponse<T>> {
-    // In CI environment, return mock responses if no HOST is set
-    if (this.environment.isCI() && !process.env.HOST) {
-      this.logger.logRequest(method, `http://localhost:8111${url}`, data, {});
-      return this.createMockResponse<T>(method, url, data);
-    }
-
     const baseUrl = await this.getBaseUrl();
     const fullUrl = `${baseUrl}${url}`;
     const defaultHeaders = await this.getDefaultHeaders();
