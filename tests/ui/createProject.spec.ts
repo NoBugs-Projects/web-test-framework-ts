@@ -17,7 +17,7 @@ testWithAdmin.describe("UI Project Creation Tests", () => {
   testWithAdmin(
     "User should be able to create project via UI",
     { tag: [TEST_TAGS.POSITIVE, TEST_TAGS.CRUD] },
-    async ({ testDataStorage, page, pageManager }) => {
+    async ({ pageManager }) => {
       // Step: Generate unique project and build type names using DataGenerator
       const projectData = DataGenerator.generateProjectData();
       const buildTypeData = DataGenerator.generateBuildTypeData();
@@ -54,14 +54,14 @@ testWithAdmin.describe("UI Project Creation Tests", () => {
         .projectsPage()
         .findProjectByName(projectData.name);
 
-      await expect(findByProjectName).toBeTruthy();
+      expect(findByProjectName).toBeTruthy();
     },
   );
 
   testWithAdmin(
     "User should not be able to create project without name",
     { tag: [TEST_TAGS.NEGATIVE, TEST_TAGS.CRUD] },
-    async ({ testDataStorage, page, pageManager }) => {
+    async ({ pageManager }) => {
       // Step: Generate unique build type name using DataGenerator
       const buildTypeData = DataGenerator.generateBuildTypeData();
 

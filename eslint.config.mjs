@@ -28,11 +28,17 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': 'warn',
       
+      // Disable playwright rules that are causing issues with custom test functions
+      'playwright/no-standalone-expect': 'off',
+      'playwright/expect-expect': 'warn',
+      
       // TypeScript ESLint recommended rules (but override some)
       ...typescriptEslint.configs.recommended.rules,
       
-      // Playwright rules
+      // Playwright rules (but disable problematic ones)
       ...playwright.configs['flat/recommended'].rules,
+      'playwright/no-standalone-expect': 'off',
+      'playwright/expect-expect': 'warn',
       
       // Prettier rules
       ...prettierConfig.rules,

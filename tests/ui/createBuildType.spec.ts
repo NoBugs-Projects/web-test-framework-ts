@@ -18,9 +18,8 @@ testWithAdmin.describe("UI Build Type Creation Tests", () => {
   testWithAdmin(
     "User should be able to create build type via UI",
     { tag: [TEST_TAGS.POSITIVE, TEST_TAGS.CRUD] },
-    async ({ testDataStorage, page, pageManager }) => {
+    async ({ pageManager }) => {
       // Step: Create a test project first (needed for build type creation)
-      const projectData = DataGenerator.generateProjectData();
       const projectResult = await adminSteps.expectSuccess(
         () =>
           adminSteps.createProject({
@@ -65,9 +64,8 @@ testWithAdmin.describe("UI Build Type Creation Tests", () => {
   testWithAdmin(
     "User should not be able to create build type without name",
     { tag: [TEST_TAGS.NEGATIVE, TEST_TAGS.CRUD] },
-    async ({ testDataStorage, page, pageManager }) => {
+    async ({ pageManager }) => {
       // Step: Create a test project first (needed for build type creation)
-      const projectData = DataGenerator.generateProjectData();
       const projectResult = await adminSteps.expectSuccess(
         () =>
           adminSteps.createProject({
@@ -108,9 +106,8 @@ testWithAdmin.describe("UI Build Type Creation Tests", () => {
   testWithAdmin(
     "User should not be able to create build type with duplicate ID",
     { tag: [TEST_TAGS.NEGATIVE, TEST_TAGS.CRUD] },
-    async ({ testDataStorage, page, pageManager }) => {
+    async ({ pageManager }) => {
       // Step: Create a test project first (needed for build type creation)
-      const projectData = DataGenerator.generateProjectData();
       const projectResult = await adminSteps.expectSuccess(
         () =>
           adminSteps.createProject({
