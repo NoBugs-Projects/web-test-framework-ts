@@ -20,4 +20,5 @@ export const test = base.extend<TestFixtures>({
   },
 });
 
+// Export the original test for cases where we don't need CI detection
 export { expect } from "@playwright/test";

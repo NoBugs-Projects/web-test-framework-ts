@@ -10,6 +10,7 @@ export interface EnvironmentConfig {
   enableLogging: boolean;
   enableFileLogging: boolean;
   logFilePath?: string;
+  isCI: boolean;
 }
 
 export class Environment {
@@ -38,8 +39,11 @@ export class Environment {
       this.properties = {};
     }
 
+    // Detect CI environment
+    const isCI = process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
+
     this.config = {
-      baseUrl: this.properties.get("base.url") || "http://192.168.0.19:8111",
+      baseUrl: this.getBaseUrlForEnvironment(isCI),
       apiVersion: this.properties.get("api.version") || "v1",
       timeout: parseInt(this.properties.get("timeout")) || 30000,
       retries: parseInt(this.properties.get("retries")) || 3,
@@ -47,7 +51,23 @@ export class Environment {
       enableLogging: this.properties.get("enable.logging") !== "false",
       enableFileLogging: this.properties.get("enable.file.logging") === "true",
       logFilePath: this.properties.get("log.file.path"),
+      isCI: isCI,
     };
+  }
+
+  private getBaseUrlForEnvironment(isCI: boolean): string {
+    if (isCI) {
+      // In CI environment, use the HOST environment variable if available
+      const host = process.env.HOST;
+      if (host) {
+        return `http://${host}:8111`;
+      }
+      // Fallback to localhost if HOST is not set
+      return "http://localhost:8111";
+    }
+    
+    // In local environment, use the configured base URL
+    return this.properties.get("base.url") || "http://192.168.0.19:8111";
   }
 
   getConfig(): EnvironmentConfig {
@@ -84,6 +104,10 @@ export class Environment {
 
   getLogFilePath(): string | undefined {
     return this.config.logFilePath;
+  }
+
+  isCI(): boolean {
+    return this.config.isCI;
   }
 
   // Method to update config at runtime
