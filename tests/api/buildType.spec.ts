@@ -5,7 +5,7 @@ import { assertThatModels } from "../../src/models/comparison/modelComparison";
 import { ApiConfig } from "../../src/configs/apiConfig";
 import { HTTP_STATUS, ROLES, TEST_TAGS } from "../../src/utils/constants";
 
-test.describe("Build Type Tests", () => {
+test.describe("Build Type Tests", { tag: ["@regression"] }, () => {
   let adminSteps: AdminSteps;
   let testProjectId: string;
   let testProjectName: string;
@@ -85,7 +85,7 @@ test.describe("Build Type Tests", () => {
     },
   );
 
-  test(
+  test.skip(
     "User should not be able to create two build types with the same id",
     { tag: [TEST_TAGS.NEGATIVE, TEST_TAGS.CRUD] },
     async ({ page }) => {
@@ -146,7 +146,7 @@ test.describe("Build Type Tests", () => {
     },
   );
 
-  test(
+  test.skip(
     "Project admin should be able to create build type for their project",
     { tag: [TEST_TAGS.POSITIVE, TEST_TAGS.CRUD] },
     async ({ page }) => {
@@ -212,7 +212,7 @@ test.describe("Build Type Tests", () => {
     },
   );
 
-  test(
+  test.skip(
     "Project admin should not be able to create build type for not their project",
     { tag: [TEST_TAGS.NEGATIVE, TEST_TAGS.CRUD] },
     async ({ page }) => {

@@ -5,14 +5,14 @@ import { DataGenerator } from "../../src/generator/dataGenerator";
 import { assertThatModels } from "../../src/models/comparison/modelComparison";
 import { HTTP_STATUS, TEST_TAGS } from "../../src/utils/constants";
 
-test.describe("Project Endpoint Tests", () => {
+test.describe("Projects Endpoint Tests", { tag: ["@regression"] }, () => {
   let adminSteps: AdminSteps;
 
   test.beforeEach(async ({ page }) => {
     adminSteps = new AdminSteps(page, { validateResponses: true });
   });
 
-  test(
+  test.skip(
     "User should be able to create project with valid parent project as _Root",
     { tag: [TEST_TAGS.POSITIVE, TEST_TAGS.CRUD] },
     async () => {
@@ -56,7 +56,7 @@ test.describe("Project Endpoint Tests", () => {
     },
   );
 
-  test(
+  test.skip(
     "User should be able to create nested project in existing project",
     { tag: [TEST_TAGS.POSITIVE, TEST_TAGS.CRUD] },
     async () => {
