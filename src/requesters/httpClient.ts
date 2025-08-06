@@ -29,29 +29,61 @@ export class HttpClient {
   private options: HttpClientOptions;
   private testDataStorage: TestDataStorage;
   private environment: Environment;
+  private csrfToken: string | null = null;
 
   constructor(page: Page, config: ApiConfig, options: HttpClientOptions = {}) {
     this.page = page;
     this.config = config;
-    this.logger = new Logger();
-    this.options = {
-      timeout: 30000,
-      retries: 3,
-      validateStatus: (status: number) => status >= 200 && status < 300,
-      enableAutoCleanup: true,
-      ...options,
-    };
-    this.testDataStorage = TestDataStorage.getInstance();
+    this.options = options;
     this.environment = Environment.getInstance();
+    this.testDataStorage = TestDataStorage.getInstance();
+
+    this.logger = new Logger({
+      logLevel: this.environment.getLogLevel() === "debug" ? 3 : 2,
+      enableConsole: this.environment.isLoggingEnabled(),
+      enableFile: this.environment.isFileLoggingEnabled(),
+      logFile: this.environment.getLogFilePath(),
+    });
+  }
+
+  /**
+   * Get CSRF token from TeamCity server
+   */
+  private async getCsrfToken(): Promise<string | null> {
+    try {
+      // Use authenticated URL to get CSRF token
+      const authenticatedUrl = this.environment.getAuthenticatedUrl("superuser");
+      const response = await this.page.request.get(`${authenticatedUrl}/app/rest/csrf-token`);
+      
+      if (response.status() === 200) {
+        const responseText = await response.text();
+        const data = JSON.parse(responseText);
+        return data.token || null;
+      }
+    } catch (error) {
+      this.logger.warn("Failed to get CSRF token:", error);
+    }
+    return null;
+  }
+
+  /**
+   * Ensure CSRF token is available for requests that need it
+   */
+  private async ensureCsrfToken(): Promise<void> {
+    if (!this.csrfToken) {
+      this.csrfToken = await this.getCsrfToken();
+    }
   }
 
   private async getBaseUrl(): Promise<string> {
-    // Use environment configuration for base URL
     return this.environment.getBaseUrl();
   }
 
   private async getDefaultHeaders(): Promise<Record<string, string>> {
-    return await headers(this.page);
+    return {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
   }
 
   private validateStatus(
@@ -73,9 +105,26 @@ export class HttpClient {
     data?: any,
     additionalHeaders?: Record<string, string>,
   ): Promise<ApiResponse<T>> {
-    const baseUrl = await this.getBaseUrl();
-    const fullUrl = `${baseUrl}${url}`;
+    // Check if the URL already includes authentication (contains @)
+    const isAuthenticatedUrl = url.includes('@');
+    
+    let fullUrl: string;
+    if (isAuthenticatedUrl) {
+      // If URL already includes authentication, use it directly
+      fullUrl = url;
+    } else {
+      // Otherwise, prepend the base URL
+      const baseUrl = await this.getBaseUrl();
+      fullUrl = `${baseUrl}${url}`;
+    }
+    
     const defaultHeaders = await this.getDefaultHeaders();
+
+    // Get CSRF token for PUT operations (role assignments)
+    const needsCsrfToken = method === "PUT";
+    if (needsCsrfToken) {
+      await this.ensureCsrfToken();
+    }
 
     const requestHeaders = {
       ...defaultHeaders,
@@ -83,17 +132,29 @@ export class HttpClient {
       ...additionalHeaders,
     };
 
+    // Add CSRF token if available and needed
+    if (needsCsrfToken && this.csrfToken) {
+      requestHeaders["X-TC-CSRF-TOKEN"] = this.csrfToken;
+    }
+
     const requestOptions: any = {
       headers: requestHeaders,
       timeout: this.options.timeout,
+      data: data ? JSON.stringify(data) : undefined,
+      failOnStatusCode: false,
+      ignoreHTTPSErrors: true,
     };
 
-    if (data) {
-      requestOptions.data = data;
-    }
+    // Clear cookies before making the request to prevent CSRF token issues
+    await this.page.context().clearCookies();
 
     // Log request
-    this.logger.logRequest(method, fullUrl, data, requestHeaders);
+    this.logger.info("HTTP Request", {
+      method,
+      url: fullUrl,
+      data,
+      headers: requestHeaders,
+    });
 
     let response: APIResponse;
     switch (method) {
@@ -116,7 +177,28 @@ export class HttpClient {
         throw new Error(`Unsupported HTTP method: ${method}`);
     }
 
-    const responseData = await response.json();
+    // Read response text first to handle any extra characters
+    const responseText = await response.text();
+    let responseData;
+    
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (error) {
+      // If we can't parse JSON, check if it's an HTML response
+      if (responseText.includes('<!DOCTYPE') || responseText.includes('<html')) {
+        // Extract meaningful error information from HTML
+        const errorMatch = responseText.match(/<title[^>]*>([^<]+)<\/title>/i);
+        const errorMessage = errorMatch ? errorMatch[1] : 'HTML Error Response';
+        
+        throw new Error(`Server returned HTML instead of JSON: ${errorMessage}. Status: ${response.status()}`);
+      } else {
+        console.warn("Failed to parse JSON response:", error);
+        console.warn("Response text:", responseText);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        throw new Error(`Failed to parse JSON response: ${errorMessage}`);
+      }
+    }
+    
     const apiResponse: ApiResponse<T> = {
       status: response.status(),
       data: responseData,

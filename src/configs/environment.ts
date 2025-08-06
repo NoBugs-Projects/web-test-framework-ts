@@ -1,6 +1,14 @@
 import PropertiesReader from "properties-reader";
 import path from "path";
 
+export type AuthRole = "superuser" | "admin" | "user";
+
+export interface AuthCredentials {
+  username?: string;
+  password?: string;
+  token?: string;
+}
+
 export interface EnvironmentConfig {
   baseUrl: string;
   apiVersion: string;
@@ -11,15 +19,18 @@ export interface EnvironmentConfig {
   enableFileLogging: boolean;
   logFilePath?: string;
   isCI: boolean;
+  defaultAuthRole: AuthRole;
 }
 
 export class Environment {
   private static instance: Environment;
   private config!: EnvironmentConfig;
   private properties: any;
+  private authCredentials: Map<AuthRole, AuthCredentials> = new Map();
 
   private constructor() {
     this.loadConfig();
+    this.loadAuthCredentials();
   }
 
   static getInstance(): Environment {
@@ -58,22 +69,117 @@ export class Environment {
       enableFileLogging: this.properties.get("enable.file.logging") === "true",
       logFilePath: this.properties.get("log.file.path"),
       isCI: isCI,
+      defaultAuthRole: (this.properties.get("default.auth.role") as AuthRole) || "superuser",
     };
   }
 
+  private loadAuthCredentials(): void {
+    try {
+      const fs = require('fs');
+      const configPath = path.join(process.cwd(), "config.properties");
+      const configContent = fs.readFileSync(configPath, 'utf8');
+      
+      // Load superuser credentials
+      const superuserTokenMatch = configContent.match(/^superuser\.token=(.+)$/m);
+      if (superuserTokenMatch) {
+        this.authCredentials.set("superuser", {
+          token: superuserTokenMatch[1].trim()
+        });
+      }
+
+      // Load admin credentials
+      const adminUsernameMatch = configContent.match(/^admin\.username=(.+)$/m);
+      const adminPasswordMatch = configContent.match(/^admin\.password=(.+)$/m);
+      if (adminUsernameMatch && adminPasswordMatch) {
+        this.authCredentials.set("admin", {
+          username: adminUsernameMatch[1].trim(),
+          password: adminPasswordMatch[1].trim()
+        });
+      }
+
+      // Load user credentials (if configured)
+      const userUsernameMatch = configContent.match(/^user\.username=(.+)$/m);
+      const userPasswordMatch = configContent.match(/^user\.password=(.+)$/m);
+      if (userUsernameMatch && userPasswordMatch) {
+        this.authCredentials.set("user", {
+          username: userUsernameMatch[1].trim(),
+          password: userPasswordMatch[1].trim()
+        });
+      }
+    } catch (error) {
+      console.warn("Could not load authentication credentials:", error);
+    }
+  }
+
   private getBaseUrlForEnvironment(isCI: boolean): string {
+    let baseUrl: string;
     if (isCI) {
       // In CI environment, use the HOST environment variable if available
       const host = process.env.HOST;
       if (host) {
-        return `http://${host}:8111`;
+        baseUrl = `http://${host}:8111`;
+      } else {
+        // Fallback to localhost if HOST is not set
+        baseUrl = "http://localhost:8111";
       }
-      // Fallback to localhost if HOST is not set
-      return "http://localhost:8111";
+    } else {
+      // In local environment, use the configured base URL
+      baseUrl = this.properties.get("base.url") || "http://192.168.0.19:8111";
     }
 
-    // In local environment, use the configured base URL
-    return this.properties.get("base.url") || "http://192.168.0.19:8111";
+    return baseUrl;
+  }
+
+  /**
+   * Get authentication credentials for a specific role
+   */
+  getAuthCredentials(role: AuthRole): AuthCredentials | undefined {
+    return this.authCredentials.get(role);
+  }
+
+  /**
+   * Get the default authentication role
+   */
+  getDefaultAuthRole(): AuthRole {
+    return this.config.defaultAuthRole;
+  }
+
+  /**
+   * Check if a role is available
+   */
+  hasAuthRole(role: AuthRole): boolean {
+    return this.authCredentials.has(role);
+  }
+
+  /**
+   * Get available authentication roles
+   */
+  getAvailableAuthRoles(): AuthRole[] {
+    return Array.from(this.authCredentials.keys());
+  }
+
+  /**
+   * Build authenticated URL for a specific role
+   */
+  getAuthenticatedUrl(role: AuthRole = this.config.defaultAuthRole): string {
+    const credentials = this.getAuthCredentials(role);
+    if (!credentials) {
+      throw new Error(`No authentication credentials found for role: ${role}`);
+    }
+
+    const baseUrl = this.config.baseUrl;
+    
+    if (role === "superuser" && credentials.token) {
+      // Use token-based authentication in URL
+      const url = new URL(baseUrl);
+      return `http://:${credentials.token}@${url.host}`;
+    } else if (credentials.username && credentials.password) {
+      // Use basic authentication in URL
+      const url = new URL(baseUrl);
+      return `http://${credentials.username}:${credentials.password}@${url.host}`;
+    } else {
+      throw new Error(`Incomplete credentials for role: ${role}`);
+    }
   }
 
   getConfig(): EnvironmentConfig {

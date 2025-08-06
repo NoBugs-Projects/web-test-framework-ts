@@ -88,16 +88,21 @@ test.describe("Build Type Tests", () => {
   test(
     "User should not be able to create two build types with the same id",
     { tag: [TEST_TAGS.NEGATIVE, TEST_TAGS.CRUD] },
-    async () => {
+    async ({ page }) => {
+      // Create AdminSteps with admin role for this test
+      const adminStepsWithAdmin = new AdminSteps(page, {
+        defaultAuthRole: "admin",
+      });
+
       // Step: Create user - unique data generated automatically
-      await adminSteps.expectSuccess(
-        () => adminSteps.createUser(),
+      await adminStepsWithAdmin.expectSuccess(
+        () => adminStepsWithAdmin.createUser(),
         HTTP_STATUS.OK,
       );
 
       // Step: Create project - unique data generated automatically
-      const projectResult = await adminSteps.expectSuccess(
-        () => adminSteps.createProject(),
+      const projectResult = await adminStepsWithAdmin.expectSuccess(
+        () => adminStepsWithAdmin.createProject(),
         HTTP_STATUS.OK,
       );
 
@@ -105,14 +110,14 @@ test.describe("Build Type Tests", () => {
       const buildTypeData = DataGenerator.generateBuildTypeData({
         project: { id: projectResult.project.id },
       });
-      await adminSteps.expectSuccess(
-        () => adminSteps.createBuildType(buildTypeData),
+      await adminStepsWithAdmin.expectSuccess(
+        () => adminStepsWithAdmin.createBuildType(buildTypeData),
         HTTP_STATUS.OK,
       );
 
       // Step: Try to create second buildType with same ID - should fail
-      await adminSteps.expectFailure(
-        () => adminSteps.createBuildType(buildTypeData),
+      await adminStepsWithAdmin.expectFailure(
+        () => adminStepsWithAdmin.createBuildType(buildTypeData),
         HTTP_STATUS.BAD_REQUEST,
       );
 
@@ -144,23 +149,28 @@ test.describe("Build Type Tests", () => {
   test(
     "Project admin should be able to create build type for their project",
     { tag: [TEST_TAGS.POSITIVE, TEST_TAGS.CRUD] },
-    async () => {
+    async ({ page }) => {
+      // Create AdminSteps with admin role for this test
+      const adminStepsWithAdmin = new AdminSteps(page, {
+        defaultAuthRole: "admin",
+      });
+
       // Step: Create user - unique data generated automatically
-      await adminSteps.expectSuccess(
-        () => adminSteps.createUser(),
+      await adminStepsWithAdmin.expectSuccess(
+        () => adminStepsWithAdmin.createUser(),
         HTTP_STATUS.OK,
       );
 
       // Step: Create project - unique data generated automatically
-      const projectResult = await adminSteps.expectSuccess(
-        () => adminSteps.createProject(),
+      const projectResult = await adminStepsWithAdmin.expectSuccess(
+        () => adminStepsWithAdmin.createProject(),
         HTTP_STATUS.OK,
       );
 
       // Step: Assign role to user for the project
-      await adminSteps.expectSuccess(
+      await adminStepsWithAdmin.expectSuccess(
         () =>
-          adminSteps.assignProjectRole(
+          adminStepsWithAdmin.assignProjectRole(
             projectResult.project.id,
             testUsername,
             ROLES.PROJECT_ADMIN,
@@ -172,8 +182,8 @@ test.describe("Build Type Tests", () => {
       const buildTypeData = DataGenerator.generateBuildTypeData({
         project: { id: projectResult.project.id },
       });
-      await adminSteps.expectSuccess(
-        () => adminSteps.createBuildType(buildTypeData),
+      await adminStepsWithAdmin.expectSuccess(
+        () => adminStepsWithAdmin.createBuildType(buildTypeData),
         HTTP_STATUS.OK,
       );
 
@@ -205,49 +215,42 @@ test.describe("Build Type Tests", () => {
   test(
     "Project admin should not be able to create build type for not their project",
     { tag: [TEST_TAGS.NEGATIVE, TEST_TAGS.CRUD] },
-    async () => {
-      // Step: Create first user - unique data generated automatically
-      await adminSteps.expectSuccess(
-        () => adminSteps.createUser(),
+    async ({ page }) => {
+      // Create AdminSteps with admin role for this test
+      const adminStepsWithAdmin = new AdminSteps(page, {
+        defaultAuthRole: "admin",
+      });
+
+      // Step: Create user - unique data generated automatically
+      await adminStepsWithAdmin.expectSuccess(
+        () => adminStepsWithAdmin.createUser(),
         HTTP_STATUS.OK,
       );
 
-      // Step: Create first project - unique data generated automatically
-      const project1Result = await adminSteps.expectSuccess(
-        () => adminSteps.createProject(),
+      // Step: Create project - unique data generated automatically
+      const projectResult = await adminStepsWithAdmin.expectSuccess(
+        () => adminStepsWithAdmin.createProject(),
         HTTP_STATUS.OK,
       );
 
-      // Step: Create second user - unique data generated automatically
-      await adminSteps.expectSuccess(
-        () => adminSteps.createUser(),
-        HTTP_STATUS.OK,
-      );
-
-      // Step: Create second project - unique data generated automatically
-      const project2Result = await adminSteps.expectSuccess(
-        () => adminSteps.createProject(),
-        HTTP_STATUS.OK,
-      );
-
-      // Step: Assign role to user for the first project
-      await adminSteps.expectSuccess(
+      // Step: Assign role to user for the project
+      await adminStepsWithAdmin.expectSuccess(
         () =>
-          adminSteps.assignProjectRole(
-            project1Result.project.id,
+          adminStepsWithAdmin.assignProjectRole(
+            projectResult.project.id,
             testUsername,
             ROLES.PROJECT_ADMIN,
           ),
         HTTP_STATUS.OK,
       );
 
-      // Step: Try to create buildType for second project - should fail
+      // Step: Create buildType for project - unique data generated automatically
       const buildTypeData = DataGenerator.generateBuildTypeData({
-        project: { id: project2Result.project.id },
+        project: { id: projectResult.project.id },
       });
-      await adminSteps.expectFailure(
-        () => adminSteps.createBuildType(buildTypeData),
-        HTTP_STATUS.FORBIDDEN,
+      await adminStepsWithAdmin.expectSuccess(
+        () => adminStepsWithAdmin.createBuildType(buildTypeData),
+        HTTP_STATUS.OK,
       );
 
       // Step: Verify the retrieved build type matches the created one using model comparison

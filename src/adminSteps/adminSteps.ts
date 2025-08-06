@@ -1,9 +1,10 @@
 import { Page, expect } from "@playwright/test";
-import { HttpClient, ApiResponse } from "../requesters/httpClient";
+import { Requester } from "../requesters/requester";
 import { DataGenerator } from "../generator/dataGenerator";
 import { HTTP_STATUS, ERROR_MESSAGES, ROLES } from "../utils/constants";
 import { ApiConfig } from "../configs/apiConfig";
 import { ModelAssertions } from "../models/comparison/modelAssertions";
+import { AuthRole } from "../configs/environment";
 import {
   CreateProjectRequestModel,
   ProjectResponseModel,
@@ -13,10 +14,11 @@ export interface AdminStepsOptions {
   config?: any;
   enableLogging?: boolean;
   validateResponses?: boolean;
+  defaultAuthRole?: AuthRole;
 }
 
 export class AdminSteps {
-  private httpClient: HttpClient;
+  private requester: Requester;
   private config: ApiConfig;
   private options: AdminStepsOptions;
 
@@ -25,9 +27,10 @@ export class AdminSteps {
     this.options = {
       enableLogging: true,
       validateResponses: true,
+      defaultAuthRole: "superuser",
       ...options,
     };
-    this.httpClient = new HttpClient(page, this.config, {
+    this.requester = new Requester(page, {
       enableAutoCleanup: true,
     });
   }
@@ -46,9 +49,10 @@ export class AdminSteps {
    */
   async createProject(
     projectData?: Partial<CreateProjectRequestModel>,
+    authRole?: AuthRole,
   ): Promise<{
     request: CreateProjectRequestModel;
-    response: ApiResponse<ProjectResponseModel>;
+    response: any;
     project: ProjectResponseModel;
   }> {
     // Generate unique data if not provided
@@ -61,9 +65,10 @@ export class AdminSteps {
       ...projectData,
     });
 
-    const response = await this.httpClient.post<ProjectResponseModel>(
-      "/app/rest/projects",
+    const response = await this.requester.postWithRole<ProjectResponseModel>(
+      "app/rest/projects",
       finalProjectData,
+      authRole || this.options.defaultAuthRole,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -82,14 +87,15 @@ export class AdminSteps {
    */
   async createProjectWithToken(
     projectData?: Partial<CreateProjectRequestModel>,
+    authRole?: AuthRole,
   ): Promise<{
     project: ProjectResponseModel;
     token?: string;
   }> {
-    const result = await this.createProject(projectData);
+    const result = await this.createProject(projectData, authRole);
 
     // In TeamCity, projects don't have tokens, but we could extend this for other systems
-    const token = await this.getProjectToken(result.project.id);
+    const token = await this.getProjectToken(result.project.id, authRole);
 
     return {
       project: result.project,
@@ -100,9 +106,10 @@ export class AdminSteps {
   /**
    * Delete a project by ID
    */
-  async deleteProject(projectId: string): Promise<ApiResponse<void>> {
-    const response = await this.httpClient.delete<void>(
+  async deleteProject(projectId: string): Promise<any> {
+    const response = await this.requester.deleteWithRole<void>(
       `/app/rest/projects/id:${projectId}`,
+      this.options.defaultAuthRole,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -118,8 +125,9 @@ export class AdminSteps {
    * Get project by ID
    */
   async getProject(projectId: string): Promise<ProjectResponseModel> {
-    const response = await this.httpClient.get<ProjectResponseModel>(
+    const response = await this.requester.getWithRole<ProjectResponseModel>(
       `/app/rest/projects/id:${projectId}`,
+      this.options.defaultAuthRole,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -133,32 +141,37 @@ export class AdminSteps {
    * Get all projects
    */
   async getAllProjects(): Promise<ProjectResponseModel[]> {
-    const response = await this.httpClient.get<{
+    const response = await this.requester.getWithRole<{
       project: ProjectResponseModel[];
-    }>("/app/rest/projects");
+    }>("/app/rest/projects", this.options.defaultAuthRole);
 
     if (this.options.validateResponses && !response.success) {
       throw new Error(`Failed to get projects: ${response.error}`);
     }
 
-    return response.data.project.map((project) =>
+    return response.data.project.map((project: any) =>
       ProjectResponseModel.fromObject(project),
     );
   }
 
   /**
-   * Update project (not supported in TeamCity, but kept for compatibility)
+   * Update project with new data
    */
   async updateProject(
     projectId: string,
     updateData: Partial<ProjectResponseModel>,
   ): Promise<ProjectResponseModel> {
-    // TeamCity doesn't support PUT for projects, so we'll just return the current project
-    const currentProject = await this.getProject(projectId);
-    console.warn(
-      `Update project not supported in TeamCity. Returning current project: ${projectId}`,
+    const response = await this.requester.putWithRole<ProjectResponseModel>(
+      `/app/rest/projects/id:${projectId}`,
+      updateData,
+      this.options.defaultAuthRole,
     );
-    return currentProject;
+
+    if (this.options.validateResponses && !response.success) {
+      throw new Error(`Failed to update project: ${response.error}`);
+    }
+
+    return response.data;
   }
 
   /**
@@ -233,7 +246,7 @@ export class AdminSteps {
    * Get server information
    */
   async getServerInfo(): Promise<any> {
-    const response = await this.httpClient.get<any>("/app/rest/server");
+    const response = await this.requester.getWithRole<any>("/app/rest/server", this.options.defaultAuthRole);
 
     if (this.options.validateResponses && !response.success) {
       throw new Error(`Failed to get server info: ${response.error}`);
@@ -259,6 +272,7 @@ export class AdminSteps {
    */
   private async getProjectToken(
     projectId: string,
+    authRole?: AuthRole,
   ): Promise<string | undefined> {
     // This is a placeholder - in TeamCity, projects don't have tokens
     // But this could be implemented for other systems
@@ -302,7 +316,7 @@ export class AdminSteps {
   // Build Type Management Methods
   async createBuildType(
     buildTypeData?: Partial<any>,
-  ): Promise<ApiResponse<any>> {
+  ): Promise<any> {
     // Generate unique build type ID if not provided
     const uniqueId = this.generateUniqueId("test_build_type");
     const uniqueName = this.generateUniqueId("TestBuildType");
@@ -313,9 +327,10 @@ export class AdminSteps {
       ...buildTypeData,
     });
 
-    const response = await this.httpClient.post<any>(
+    const response = await this.requester.postWithRole<any>(
       "/app/rest/buildTypes",
       finalBuildTypeData,
+      this.options.defaultAuthRole,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -327,9 +342,10 @@ export class AdminSteps {
     return response;
   }
 
-  async getBuildType(buildTypeId: string): Promise<ApiResponse<any>> {
-    const response = await this.httpClient.get<any>(
+  async getBuildType(buildTypeId: string): Promise<any> {
+    const response = await this.requester.getWithRole<any>(
       `/app/rest/buildTypes/id:${buildTypeId}`,
+      this.options.defaultAuthRole,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -341,9 +357,10 @@ export class AdminSteps {
     return response;
   }
 
-  async deleteBuildType(buildTypeId: string): Promise<ApiResponse<void>> {
-    const response = await this.httpClient.delete<void>(
+  async deleteBuildType(buildTypeId: string): Promise<any> {
+    const response = await this.requester.deleteWithRole<void>(
       `/app/rest/buildTypes/id:${buildTypeId}`,
+      this.options.defaultAuthRole,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -355,8 +372,8 @@ export class AdminSteps {
     return response;
   }
 
-  async getAllBuildTypes(): Promise<ApiResponse<any>> {
-    const response = await this.httpClient.get<any>("/app/rest/buildTypes");
+  async getAllBuildTypes(): Promise<any> {
+    const response = await this.requester.getWithRole<any>("/app/rest/buildTypes", this.options.defaultAuthRole);
 
     if (this.options.validateResponses && !response.success) {
       throw new Error(`Failed to get build types: ${response.error}`);
@@ -366,7 +383,7 @@ export class AdminSteps {
   }
 
   // User Management Methods
-  async createUser(userData?: Partial<any>): Promise<ApiResponse<any>> {
+  async createUser(userData?: Partial<any>): Promise<any> {
     // Generate unique username if not provided
     const uniqueUsername = this.generateUniqueId("test_user");
 
@@ -375,9 +392,10 @@ export class AdminSteps {
       ...userData,
     });
 
-    const response = await this.httpClient.post<any>(
+    const response = await this.requester.postWithRole<any>(
       "/app/rest/users",
       finalUserData,
+      this.options.defaultAuthRole,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -387,9 +405,10 @@ export class AdminSteps {
     return response;
   }
 
-  async getUser(username: string): Promise<ApiResponse<any>> {
-    const response = await this.httpClient.get<any>(
+  async getUser(username: string): Promise<any> {
+    const response = await this.requester.getWithRole<any>(
       `/app/rest/users/username:${username}`,
+      this.options.defaultAuthRole,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -399,9 +418,10 @@ export class AdminSteps {
     return response;
   }
 
-  async deleteUser(username: string): Promise<ApiResponse<void>> {
-    const response = await this.httpClient.delete<void>(
+  async deleteUser(username: string): Promise<any> {
+    const response = await this.requester.deleteWithRole<void>(
       `/app/rest/users/username:${username}`,
+      this.options.defaultAuthRole,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -416,16 +436,17 @@ export class AdminSteps {
     projectId: string,
     username: string,
     role: string,
-  ): Promise<ApiResponse<any>> {
+  ): Promise<any> {
     const roleData = {
       username,
       roleId: role,
     };
 
     // TeamCity uses PUT for role assignment, not POST
-    const response = await this.httpClient.put<any>(
+    const response = await this.requester.putWithRole<any>(
       `/app/rest/projects/id:${projectId}/roles`,
       roleData,
+      this.options.defaultAuthRole,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -437,9 +458,10 @@ export class AdminSteps {
     return response;
   }
 
-  async getProjectRoles(projectId: string): Promise<ApiResponse<any>> {
-    const response = await this.httpClient.get<any>(
+  async getProjectRoles(projectId: string): Promise<any> {
+    const response = await this.requester.getWithRole<any>(
       `/app/rest/projects/id:${projectId}/roles`,
+      this.options.defaultAuthRole,
     );
 
     if (this.options.validateResponses && !response.success) {
@@ -545,5 +567,19 @@ export class AdminSteps {
       }
       throw error;
     }
+  }
+
+  /**
+   * Get the underlying requester for advanced usage
+   */
+  getRequester(): Requester {
+    return this.requester;
+  }
+
+  /**
+   * Get the underlying HTTP client for advanced usage
+   */
+  getHttpClient(): any {
+    return this.requester.getHttpClient();
   }
 }
