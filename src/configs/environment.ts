@@ -116,15 +116,19 @@ export class Environment {
     if (isCI) {
       // In CI environment, use the HOST environment variable if available
       const host = process.env.HOST;
+      console.log(`CI Environment - HOST env var: ${host}`);
       if (host) {
         baseUrl = `http://${host}:8111`;
+        console.log(`Using HOST env var for baseUrl: ${baseUrl}`);
       } else {
         // Fallback to localhost if HOST is not set
         baseUrl = "http://localhost:8111";
+        console.log(`HOST env var not found, using localhost: ${baseUrl}`);
       }
     } else {
       // In local environment, use the configured base URL
       baseUrl = this.properties.get("base.url") || "http://192.168.0.19:8111";
+      console.log(`Local environment baseUrl: ${baseUrl}`);
     }
 
     return baseUrl;
@@ -168,15 +172,20 @@ export class Environment {
     }
 
     const baseUrl = this.config.baseUrl;
+    console.log(`Building authenticated URL for role ${role}, baseUrl: ${baseUrl}`);
     
     if (role === "superuser" && credentials.token) {
       // Use token-based authentication in URL
       const url = new URL(baseUrl);
-      return `http://:${credentials.token}@${url.host}`;
+      const authenticatedUrl = `${url.protocol}//:${credentials.token}@${url.host}`;
+      console.log(`Superuser authenticated URL: ${authenticatedUrl}`);
+      return authenticatedUrl;
     } else if (credentials.username && credentials.password) {
       // Use basic authentication in URL
       const url = new URL(baseUrl);
-      return `http://${credentials.username}:${credentials.password}@${url.host}`;
+      const authenticatedUrl = `${url.protocol}//${credentials.username}:${credentials.password}@${url.host}`;
+      console.log(`Admin/User authenticated URL: ${authenticatedUrl}`);
+      return authenticatedUrl;
     } else {
       throw new Error(`Incomplete credentials for role: ${role}`);
     }

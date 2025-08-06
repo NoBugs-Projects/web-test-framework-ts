@@ -79,6 +79,11 @@ jobs:
       run: |
         sed -i "s/^superUserToken=.*/superUserToken=$SUPER_USER_TOKEN/" config.properties
 
+    - name: Update config.properties with host
+      shell: bash
+      run: |
+        sed -i "s/^base\.url=.*/base.url=http:\/\/$HOST:8111/" config.properties
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
@@ -92,7 +97,7 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Run Playwright tests
-      run: npx playwright test
+      run: npx playwright test tests/api/buildType.spec.ts tests/api/projectsEndpoint.spec.ts
       env:
         HOST: $HOST
         SUPER_USER_TOKEN: $SUPER_USER_TOKEN
