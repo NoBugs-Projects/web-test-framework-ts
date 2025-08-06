@@ -79,77 +79,6 @@ jobs:
       run: |
         sed -i "s/^superUserToken=.*/superUserToken=$SUPER_USER_TOKEN/" config.properties
 
-    - name: Health check TeamCity server
-      shell: bash
-      run: |
-        echo "🔍 TeamCity Health Check"
-        echo "=========================="
-        echo "Host: $HOST:8111"
-        echo "Token: $SUPER_USER_TOKEN"
-        echo ""
-        
-        # Check 1: Basic connectivity
-        echo "1. Testing basic connectivity..."
-        if curl -s --connect-timeout 10 "http://$HOST:8111" > /dev/null; then
-          echo "✅ Server is reachable"
-        else
-          echo "❌ Cannot connect to server"
-          exit 1
-        fi
-        
-        # Check 2: TeamCity API endpoint
-        echo "2. Testing TeamCity API endpoint..."
-        if curl -s --connect-timeout 10 "http://$HOST:8111/app/rest/server" > /dev/null; then
-          echo "✅ TeamCity API is accessible"
-        else
-          echo "❌ TeamCity API is not accessible"
-          exit 1
-        fi
-        
-        # Check 3: Superuser token authentication
-        echo "3. Testing superuser token authentication..."
-        AUTH_RESPONSE=$(curl -s --connect-timeout 10 -w "%{http_code}" "http://:$SUPER_USER_TOKEN@$HOST:8111/app/rest/server" -o /tmp/auth_response.json)
-        
-        if [ "$AUTH_RESPONSE" = "200" ]; then
-          echo "✅ Superuser token authentication successful"
-        else
-          echo "❌ Superuser token authentication failed (HTTP $AUTH_RESPONSE)"
-          if [ -f /tmp/auth_response.json ]; then
-            echo "Response: $(cat /tmp/auth_response.json)"
-          fi
-          exit 1
-        fi
-        
-        # Check 4: Test authenticated API endpoint
-        echo "4. Testing authenticated API endpoint..."
-        PROJECTS_RESPONSE=$(curl -s --connect-timeout 10 -w "%{http_code}" "http://:$SUPER_USER_TOKEN@$HOST:8111/app/rest/projects" -o /tmp/projects_response.json)
-        
-        if [ "$PROJECTS_RESPONSE" = "200" ]; then
-          echo "✅ Authenticated API endpoint working"
-        else
-          echo "❌ Authenticated API endpoint failed (HTTP $PROJECTS_RESPONSE)"
-          if [ -f /tmp/projects_response.json ]; then
-            echo "Response: $(cat /tmp/projects_response.json)"
-          fi
-          exit 1
-        fi
-        
-        # Cleanup
-        rm -f /tmp/auth_response.json /tmp/projects_response.json
-        
-        echo ""
-        echo "✅ All health checks passed! TeamCity is ready for testing."
-        echo ""
-        echo "🚀 Ready to run tests!"
-
-  test:
-    runs-on: ubuntu-latest
-    needs: setup-teamcity
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
@@ -162,17 +91,11 @@ jobs:
     - name: Install Playwright browsers
       run: npx playwright install --with-deps
 
-    - name: Update config with TeamCity settings
-      shell: bash
-      run: |
-        sed -i "s/^base\.url=.*/base.url=http:\/\/${{ needs.setup-teamcity.outputs.host }}:8111/" config.properties
-        sed -i "s/^superUserToken=.*/superUserToken=${{ needs.setup-teamcity.outputs.super-user-token }}/" config.properties
-
     - name: Run Playwright tests
       run: npx playwright test
       env:
-        HOST: ${{ needs.setup-teamcity.outputs.host }}
-        SUPER_USER_TOKEN: ${{ needs.setup-teamcity.outputs.super-user-token }}
+        HOST: $HOST
+        SUPER_USER_TOKEN: $SUPER_USER_TOKEN
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
