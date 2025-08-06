@@ -99,8 +99,8 @@ jobs:
     - name: Run Playwright tests
       run: npx playwright test tests/api/buildType.spec.ts tests/api/projectsEndpoint.spec.ts
       env:
-        HOST: $HOST
-        SUPER_USER_TOKEN: $SUPER_USER_TOKEN
+        HOST: ${{ env.HOST }}
+        SUPER_USER_TOKEN: ${{ env.SUPER_USER_TOKEN }}
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
