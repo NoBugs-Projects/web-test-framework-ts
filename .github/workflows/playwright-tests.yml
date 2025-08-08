@@ -84,6 +84,56 @@ jobs:
       run: |
         sed -i "s/^base\.url=.*/base.url=http:\/\/$HOST:8111/" config.properties
 
+    - name: Health check - Verify TeamCity is ready
+      shell: bash
+      run: |
+        echo "Waiting for TeamCity to be ready..."
+        max_attempts=30
+        attempt=1
+        
+        while [ $attempt -le $max_attempts ]; do
+          echo "Attempt $attempt/$max_attempts: Checking TeamCity availability..."
+          
+          # Check if TeamCity is responding
+          if curl -s -f "http://$HOST:8111" > /dev/null; then
+            echo "TeamCity is responding to HTTP requests"
+            
+            # Check if we can get JSON response (not HTML setup page)
+            response=$(curl -s -H "Accept: application/json" "http://$HOST:8111/app/rest/server")
+            if echo "$response" | grep -q "version\|buildNumber" && ! echo "$response" | grep -q "Create Administrator Account"; then
+              echo "TeamCity API is accessible and returning JSON"
+              break
+            else
+              echo "TeamCity is still in setup mode, waiting..."
+              sleep 10
+            fi
+          else
+            echo "TeamCity is not responding yet, waiting..."
+            sleep 10
+          fi
+          
+          attempt=$((attempt + 1))
+        done
+        
+        if [ $attempt -gt $max_attempts ]; then
+          echo "ERROR: TeamCity did not become ready within the expected time"
+          echo "Last response from TeamCity:"
+          curl -s "http://$HOST:8111/app/rest/server" || echo "No response"
+          exit 1
+        fi
+        
+        echo "TeamCity is ready! Testing authentication..."
+        
+        # Test authentication with superuser token
+        auth_response=$(curl -s -H "Accept: application/json" "http://:$SUPER_USER_TOKEN@$HOST:8111/app/rest/server")
+        if echo "$auth_response" | grep -q "version\|buildNumber" && ! echo "$auth_response" | grep -q "Create Administrator Account"; then
+          echo "✅ Authentication successful! TeamCity is ready for testing."
+        else
+          echo "❌ Authentication failed. Response:"
+          echo "$auth_response"
+          exit 1
+        fi
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
